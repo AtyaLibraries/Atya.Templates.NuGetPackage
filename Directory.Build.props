@@ -1,0 +1,59 @@
+<Project>
+
+  <!--
+    Global defaults. Applied to every project under this repository root.
+    Per-project overrides belong in the .csproj or a scoped Directory.Build.props.
+  -->
+
+  <PropertyGroup Label="Framework and language">
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Build quality">
+    <RepositoryHasGitDirectory Condition="'$(RepositoryHasGitDirectory)' == '' And Exists('$(MSBuildThisFileDirectory).git')">true</RepositoryHasGitDirectory>
+    <RepositoryHasGitDirectory Condition="'$(RepositoryHasGitDirectory)' == ''">false</RepositoryHasGitDirectory>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
+    <!-- Strict on shipped code; relaxed on tests/samples so a warning does not block experiments. -->
+    <TreatWarningsAsErrors Condition="'$(IsPackable)' == 'true'">true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Restore">
+    <!-- Set UseLockFiles=true to opt into per-project packages.lock.json. In CI, combine with RestoreLockedMode=true for reproducible restores. -->
+    <RestorePackagesWithLockFile Condition="'$(UseLockFiles)' == 'true'">true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Packaging defaults">
+    <IsPackable>false</IsPackable>
+    <Authors>__PACKAGE_AUTHORS__</Authors>
+    <Company>__PACKAGE_COMPANY__</Company>
+    <Copyright>Copyright (c) __COPYRIGHT_YEAR__ __PACKAGE_AUTHORS__</Copyright>
+    <Description>__PACKAGE_DESCRIPTION__</Description>
+    <PackageTags>__PACKAGE_TAGS__</PackageTags>
+    <RepositoryUrl>__REPOSITORY_URL__</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!-- Deterministic source paths in PDBs / SourceLink metadata. -->
+    <EmbedUntrackedSources Condition="'$(RepositoryHasGitDirectory)' == 'true'">true</EmbedUntrackedSources>
+    <PublishRepositoryUrl Condition="'$(RepositoryHasGitDirectory)' == 'true'">true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Trim/AOT opt-ins (per-project)">
+    <!-- Turn these on in a leaf .csproj when the package is AOT/trim-safe. -->
+    <!-- <IsTrimmable>true</IsTrimmable> -->
+    <!-- <IsAotCompatible>true</IsAotCompatible> -->
+  </PropertyGroup>
+
+</Project>

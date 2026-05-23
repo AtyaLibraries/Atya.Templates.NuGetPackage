@@ -1,0 +1,20 @@
+name: Feature request
+description: Suggest an addition or change to __PACKAGE_NAME__.
+labels: [enhancement, triage]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the use case, not the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API / behaviour
+      render: csharp
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

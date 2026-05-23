@@ -1,0 +1,223 @@
+name: Publish NuGet
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Optional stable SemVer version, for example 1.2.0.
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  NUGET_XMLDOC_MODE: skip
+  SOLUTION_FILE: .\__PACKAGE_NAME__.sln
+  TEST_PROJECT: .\tests\__PACKAGE_NAME__.UnitTests\__PACKAGE_NAME__.UnitTests.csproj
+  PACKAGE_PROJECT: .\src\__PACKAGE_NAME__\__PACKAGE_NAME__.csproj
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        shell: pwsh
+        run: |
+          git fetch --tags --force
+
+          $requestedVersion = '${{ inputs.version }}'
+          $currentTag = git tag --points-at HEAD --list 'v[0-9]*.[0-9]*.[0-9]*' | Select-Object -First 1
+
+          if (-not [string]::IsNullOrWhiteSpace($requestedVersion)) {
+            if ($requestedVersion -notmatch '^\d+\.\d+\.\d+$') {
+              throw "Version must use stable SemVer format: MAJOR.MINOR.PATCH."
+            }
+
+            $version = $requestedVersion
+          } elseif (-not [string]::IsNullOrWhiteSpace($currentTag)) {
+            $version = $currentTag.TrimStart('v')
+          } else {
+            $latestTag = git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | Select-Object -First 1
+
+            if ([string]::IsNullOrWhiteSpace($latestTag)) {
+              $version = '1.0.0'
+            } else {
+              $match = [regex]::Match($latestTag, '^v(?<major>\d+)\.(?<minor>\d+)\.(?<patch>\d+)$')
+
+              if (-not $match.Success) {
+                throw "Invalid version tag '$latestTag'. Expected vMAJOR.MINOR.PATCH."
+              }
+
+              $major = [int]$match.Groups['major'].Value
+              $minor = [int]$match.Groups['minor'].Value
+              $patch = [int]$match.Groups['patch'].Value + 1
+              $version = "$major.$minor.$patch"
+            }
+          }
+
+          $tag = "v$version"
+          $existingTag = git tag --list $tag
+
+          if (-not [string]::IsNullOrWhiteSpace($existingTag)) {
+            $tagCommit = git rev-list -n 1 $tag
+            $headCommit = git rev-parse HEAD
+
+            if ($tagCommit -ne $headCommit) {
+              throw "Tag $tag already exists on another commit."
+            }
+
+            $createTag = 'false'
+          } else {
+            $createTag = 'true'
+          }
+
+          Add-Content -Path $env:GITHUB_ENV -Value "PACKAGE_VERSION=$version"
+          Add-Content -Path $env:GITHUB_ENV -Value "MINVERVERSIONOVERRIDE=$version"
+          Add-Content -Path $env:GITHUB_ENV -Value "CREATE_VERSION_TAG=$createTag"
+          Add-Content -Path $env:GITHUB_OUTPUT -Value "version=$version"
+
+          Write-Host "Package version: $version"
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore "$env:SOLUTION_FILE" --verbosity minimal -m:1
+
+      - name: Vulnerability audit
+        shell: pwsh
+        run: |
+          $audit = dotnet list "$env:SOLUTION_FILE" package --vulnerable --include-transitive
+          $audit | Write-Host
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          if ($audit -match 'has the following vulnerable packages') {
+            throw "Vulnerable packages found."
+          }
+
+      - name: Format
+        run: dotnet format "$env:SOLUTION_FILE" --verify-no-changes --verbosity minimal --no-restore
+
+      - name: Build
+        run: >
+          dotnet build "$env:SOLUTION_FILE"
+          --configuration Release
+          --no-restore
+          --verbosity minimal
+          -m:1
+          "-p:Version=$env:PACKAGE_VERSION"
+          "-p:PackageVersion=$env:PACKAGE_VERSION"
+          "-p:MinVerVersionOverride=$env:PACKAGE_VERSION"
+
+      - name: Test
+        run: dotnet test "$env:TEST_PROJECT" --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect "XPlat Code Coverage" --results-directory .\artifacts\test-results --verbosity minimal
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-test-results
+          path: .\artifacts\test-results
+          if-no-files-found: warn
+
+      - name: Pack
+        run: >
+          dotnet pack "$env:PACKAGE_PROJECT"
+          --configuration Release
+          --no-build
+          --output .\artifacts\packages
+          --verbosity minimal
+          "-p:Version=$env:PACKAGE_VERSION"
+          "-p:PackageVersion=$env:PACKAGE_VERSION"
+          "-p:MinVerVersionOverride=$env:PACKAGE_VERSION"
+          -p:EnablePackageValidation=true
+
+      - name: Verify stable package version
+        shell: pwsh
+        run: |
+          if ($env:PACKAGE_VERSION -notmatch '^\d+\.\d+\.\d+$') {
+            throw "Package version must be stable SemVer: $env:PACKAGE_VERSION"
+          }
+
+          $packageVersion = [regex]::Escape($env:PACKAGE_VERSION)
+          $nupkg = Get-ChildItem -Path .\artifacts\packages -Filter "*.nupkg" | Where-Object { $_.Name -match "\.$packageVersion\.nupkg$" }
+          $snupkg = Get-ChildItem -Path .\artifacts\packages -Filter "*.snupkg" | Where-Object { $_.Name -match "\.$packageVersion\.snupkg$" }
+
+          if ($nupkg.Count -ne 1) {
+            throw "Expected exactly one stable .nupkg for version $env:PACKAGE_VERSION, found $($nupkg.Count)."
+          }
+
+          if ($snupkg.Count -ne 1) {
+            throw "Expected exactly one stable .snupkg for version $env:PACKAGE_VERSION, found $($snupkg.Count)."
+          }
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-packages-${{ steps.version.outputs.version }}
+          path: |
+            .\artifacts\packages\*.nupkg
+            .\artifacts\packages\*.snupkg
+          if-no-files-found: error
+
+      - name: Publish to nuget.org
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
+            throw "The NUGET_API_KEY repository secret is required."
+          }
+
+          dotnet nuget push ".\artifacts\packages\*.nupkg" `
+            --api-key "$env:NUGET_API_KEY" `
+            --source https://api.nuget.org/v3/index.json `
+            --skip-duplicate
+
+          dotnet nuget push ".\artifacts\packages\*.snupkg" `
+            --api-key "$env:NUGET_API_KEY" `
+            --source https://api.nuget.org/v3/index.json `
+            --skip-duplicate
+
+      - name: Create version tag
+        if: env.CREATE_VERSION_TAG == 'true'
+        shell: pwsh
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "v$env:PACKAGE_VERSION"
+          git push origin "v$env:PACKAGE_VERSION"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg

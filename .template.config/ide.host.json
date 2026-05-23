@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json.schemastore.org/ide.host",
+  "order": 0,
+  "symbolInfo": [
+    { "id": "description",       "name": { "text": "Package description" }, "isVisible": true },
+    { "id": "authors",           "name": { "text": "Authors" },              "isVisible": true },
+    { "id": "company",           "name": { "text": "Company" },              "isVisible": true },
+    { "id": "tags",              "name": { "text": "Tags (semicolon-separated)" }, "isVisible": true },
+    { "id": "repo",              "name": { "text": "Repository URL" },       "isVisible": true },
+    { "id": "framework",         "name": { "text": "Target framework" },     "isVisible": true },
+    { "id": "includeBenchmarks", "name": { "text": "Include benchmarks project" }, "isVisible": true },
+    { "id": "includeGitHub",     "name": { "text": "Include .github folder" }, "isVisible": true },
+    { "id": "skipRestore",       "name": { "text": "Skip post-generation restore" }, "isVisible": true }
+  ]
+}

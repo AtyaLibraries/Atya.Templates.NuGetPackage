@@ -1,0 +1,15 @@
+<Project>
+
+  <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\packages</PackageOutputPath>
+  </PropertyGroup>
+
+  <!-- Fail fast if a packable project is missing critical NuGet metadata. -->
+  <Target Name="ValidatePackageMetadata" BeforeTargets="Pack" Condition="'$(IsPackable)' == 'true'">
+    <Error Condition="'$(PackageId)' == ''" Text="PackageId must be set before packing." />
+    <Error Condition="'$(Description)' == ''" Text="Description must be set before packing." />
+    <Error Condition="'$(Authors)' == ''" Text="Authors must be set before packing." />
+    <Error Condition="'$(RepositoryUrl)' == ''" Text="RepositoryUrl must be set before packing (needed by SourceLink)." />
+  </Target>
+
+</Project>

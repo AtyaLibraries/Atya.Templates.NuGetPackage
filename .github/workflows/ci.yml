@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [development]
+  pull_request:
+    branches: [development, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  NUGET_XMLDOC_MODE: skip
+  SOLUTION_FILE: ./__PACKAGE_NAME__.sln
+  TEST_PROJECT: ./tests/__PACKAGE_NAME__.UnitTests/__PACKAGE_NAME__.UnitTests.csproj
+  PACKAGE_PROJECT: ./src/__PACKAGE_NAME__/__PACKAGE_NAME__.csproj
+
+jobs:
+  build:
+    name: build-${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # MinVer needs full git history
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore "${{ env.SOLUTION_FILE }}" --verbosity minimal
+
+      - name: Vulnerability audit
+        if: matrix.os == 'ubuntu-latest'
+        shell: pwsh
+        run: |
+          $audit = dotnet list "$env:SOLUTION_FILE" package --vulnerable --include-transitive
+          $audit | Write-Host
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+          if ($audit -match 'has the following vulnerable packages') {
+            throw "Vulnerable packages found."
+          }
+
+      - name: Format
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet format "${{ env.SOLUTION_FILE }}" --verify-no-changes --verbosity minimal --no-restore
+
+      - name: Build
+        run: dotnet build "${{ env.SOLUTION_FILE }}" --configuration Release --no-restore --verbosity minimal
+
+      - name: Test
+        run: dotnet test "${{ env.TEST_PROJECT }}" --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect "XPlat Code Coverage" --results-directory artifacts/test-results --verbosity minimal
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: artifacts/test-results
+          if-no-files-found: warn
+
+      - name: Generate coverage report
+        if: matrix.os == 'ubuntu-latest'
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.0
+        with:
+          reports: artifacts/test-results/**/coverage.cobertura.xml
+          targetdir: artifacts/coverage-report
+          reporttypes: HtmlInline;MarkdownSummaryGithub;Cobertura
+
+      - name: Publish coverage summary
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: cat artifacts/coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: artifacts/coverage-report
+          if-no-files-found: warn
+
+      - name: Pack
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet pack "${{ env.PACKAGE_PROJECT }}" --configuration Release --no-build --output artifacts/packages --verbosity minimal -p:EnablePackageValidation=true
+
+      - name: Upload packages
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg
+          if-no-files-found: error
