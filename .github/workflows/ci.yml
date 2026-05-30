@@ -81,7 +81,7 @@ jobs:
 
       - name: Generate coverage report
         if: matrix.os == 'ubuntu-latest'
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.0
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.10
         with:
           reports: artifacts/test-results/**/coverage.cobertura.xml
           targetdir: artifacts/coverage-report
