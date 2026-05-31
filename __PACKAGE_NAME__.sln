@@ -19,6 +19,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Folder", "Solution
 		LICENSE = LICENSE
 		.github\workflows\publish-nuget.yml = .github\workflows\publish-nuget.yml
 		README.md = README.md
+		.github\CODEOWNERS = .github\CODEOWNERS
+		.github\pull_request_template.md = .github\pull_request_template.md
+		.github\release.yml = .github\release.yml
+		.github\workflows\publish-template.yml = .github\workflows\publish-template.yml
+		.github\workflows\test-template.yml = .github\workflows\test-template.yml
+		.template.config\dotnetcli.host.json = .template.config\dotnetcli.host.json
+		.template.config\ide.host.json = .template.config\ide.host.json
+		.template.config\template.json = .template.config\template.json
+		bootstrap.ps1 = bootstrap.ps1
+		CHANGELOG.md = CHANGELOG.md
+		CONTRIBUTING.md = CONTRIBUTING.md
+		nuget.config = nuget.config
+		PACKAGE_README.md = PACKAGE_README.md
+		SECURITY.md = SECURITY.md
+		template-smoke-test.ps1 = template-smoke-test.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DC4337D4-7797-44F7-AD1F-4A640A4E49D9}"
@@ -32,6 +47,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{4F208057-661E-4B8F-AD0C-9F56F92C6B00}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "__PACKAGE_NAME__.Benchmarks", "benchmarks\__PACKAGE_NAME__.Benchmarks\__PACKAGE_NAME__.Benchmarks.csproj", "{BA188AA0-3305-D033-CE4E-510CB0A17E3D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atya.Templates.NuGetPackage", "Atya.Templates.NuGetPackage.csproj", "{7B97F4A3-BED4-462B-9851-B9395C666FB9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +72,10 @@ Global
 		{BA188AA0-3305-D033-CE4E-510CB0A17E3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BA188AA0-3305-D033-CE4E-510CB0A17E3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BA188AA0-3305-D033-CE4E-510CB0A17E3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B97F4A3-BED4-462B-9851-B9395C666FB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B97F4A3-BED4-462B-9851-B9395C666FB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B97F4A3-BED4-462B-9851-B9395C666FB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B97F4A3-BED4-462B-9851-B9395C666FB9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
