@@ -22,7 +22,7 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   NUGET_XMLDOC_MODE: skip
-  PACKAGE_PROJECT: ./Atya.Templates.AbnpPackage.csproj
+  PACKAGE_PROJECT: ./Atya.Templates.NuGetPackage.csproj
 
 jobs:
   publish:
@@ -114,7 +114,7 @@ jobs:
       - name: Verify template package
         shell: pwsh
         run: |
-          $expectedName = "Atya.Templates.AbnpPackage.$env:PACKAGE_VERSION.nupkg"
+          $expectedName = "Atya.Templates.NuGetPackage.$env:PACKAGE_VERSION.nupkg"
           $packages = Get-ChildItem -Path ./artifacts/packages -Filter $expectedName
 
           if ($packages.Count -ne 1) {

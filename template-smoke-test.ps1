@@ -26,7 +26,7 @@ param(
 $ErrorActionPreference = "Stop"
 $templateRoot  = $PSScriptRoot
 $repoRoot      = Resolve-Path $templateRoot
-$scratch       = Join-Path ([System.IO.Path]::GetTempPath()) "abnp-smoke-$([guid]::NewGuid().ToString('N').Substring(0,8))"
+$scratch       = Join-Path ([System.IO.Path]::GetTempPath()) "atya-nuget-smoke-$([guid]::NewGuid().ToString('N').Substring(0,8))"
 
 Write-Host "Template root: $templateRoot" -ForegroundColor Cyan
 Write-Host "Repo root    : $repoRoot" -ForegroundColor Cyan
@@ -39,7 +39,7 @@ try {
     Write-Host "`n[2/6] Generating package '$PackageName' into $scratch..." -ForegroundColor Yellow
     New-Item -ItemType Directory -Path $scratch | Out-Null
     $newArgs = @(
-        "new", "abnp-package",
+        "new", "atya-nuget",
         "--name", $PackageName,
         "--output", $scratch,
         "--framework", $Framework,
