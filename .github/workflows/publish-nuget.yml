@@ -12,6 +12,8 @@ on:
 
 permissions:
   contents: write
+  id-token: write
+  attestations: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -191,24 +193,85 @@ jobs:
             .\artifacts\packages\sbom.cdx.json
           if-no-files-found: error
 
-      - name: Publish to nuget.org
+      - name: Attest package provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg
+
+      - name: Sign and publish to nuget.org
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+          NUGET_SIGN_CERT_BASE64: ${{ secrets.NUGET_SIGN_CERT_BASE64 }}
+          NUGET_SIGN_CERT_PASSWORD: ${{ secrets.NUGET_SIGN_CERT_PASSWORD }}
         shell: pwsh
         run: |
           if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
             throw "The NUGET_API_KEY repository secret is required."
           }
 
-          dotnet nuget push ".\artifacts\packages\*.nupkg" `
-            --api-key "$env:NUGET_API_KEY" `
-            --source https://api.nuget.org/v3/index.json `
-            --skip-duplicate
+          $packages = @(Get-ChildItem -Path .\artifacts\packages -Filter "*.nupkg")
+          $symbolPackages = @(Get-ChildItem -Path .\artifacts\packages -Filter "*.snupkg")
 
-          dotnet nuget push ".\artifacts\packages\*.snupkg" `
-            --api-key "$env:NUGET_API_KEY" `
-            --source https://api.nuget.org/v3/index.json `
-            --skip-duplicate
+          if ($packages.Count -eq 0) {
+            throw "Expected at least one .nupkg to publish."
+          }
+
+          if ($symbolPackages.Count -eq 0) {
+            throw "Expected at least one .snupkg to publish."
+          }
+
+          $hasSigningSecrets = -not [string]::IsNullOrWhiteSpace($env:NUGET_SIGN_CERT_BASE64) -and
+            -not [string]::IsNullOrWhiteSpace($env:NUGET_SIGN_CERT_PASSWORD)
+
+          if ($hasSigningSecrets) {
+            $certPath = Join-Path $env:RUNNER_TEMP "nuget-signing-cert.pfx"
+
+            try {
+              [System.IO.File]::WriteAllBytes($certPath, [System.Convert]::FromBase64String($env:NUGET_SIGN_CERT_BASE64))
+
+              foreach ($package in $packages) {
+                dotnet nuget sign "$($package.FullName)" `
+                  --certificate-path "$certPath" `
+                  --certificate-password "$env:NUGET_SIGN_CERT_PASSWORD" `
+                  --timestamper http://timestamp.digicert.com `
+                  --overwrite
+
+                if ($LASTEXITCODE -ne 0) {
+                  exit $LASTEXITCODE
+                }
+              }
+            } finally {
+              if (Test-Path -LiteralPath $certPath) {
+                Remove-Item -LiteralPath $certPath -Force
+              }
+            }
+          } else {
+            Write-Warning "NUGET_SIGN_CERT_BASE64 and NUGET_SIGN_CERT_PASSWORD are not both set; publishing unsigned packages."
+          }
+
+          foreach ($package in $packages) {
+            dotnet nuget push "$($package.FullName)" `
+              --api-key "$env:NUGET_API_KEY" `
+              --source https://api.nuget.org/v3/index.json `
+              --skip-duplicate
+
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
+          }
+
+          foreach ($package in $symbolPackages) {
+            dotnet nuget push "$($package.FullName)" `
+              --api-key "$env:NUGET_API_KEY" `
+              --source https://api.nuget.org/v3/index.json `
+              --skip-duplicate
+
+            if ($LASTEXITCODE -ne 0) {
+              exit $LASTEXITCODE
+            }
+          }
 
       - name: Create version tag
         if: env.CREATE_VERSION_TAG == 'true'
