@@ -27,7 +27,32 @@ env:
   PACKAGE_PROJECT: .\src\__PACKAGE_NAME__\__PACKAGE_NAME__.csproj
 
 jobs:
+  should-publish:
+    name: Check publish target
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.detect.outputs.enabled }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect unrendered template repository
+        id: detect
+        shell: bash
+        run: |
+          token="__""PACKAGE_NAME""__"
+
+          if [ -f "src/${token}/${token}.csproj" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Skipped generated package publishing because this is the template source repository." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          fi
+
   publish:
+    needs: should-publish
+    if: needs.should-publish.outputs.enabled == 'true'
     runs-on: windows-latest
     timeout-minutes: 30
 
