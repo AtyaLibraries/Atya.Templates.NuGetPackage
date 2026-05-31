@@ -6,6 +6,7 @@
     { "id": "authors",           "name": { "text": "Authors" },              "isVisible": true },
     { "id": "company",           "name": { "text": "Company" },              "isVisible": true },
     { "id": "tags",              "name": { "text": "Tags (semicolon-separated)" }, "isVisible": true },
+    { "id": "githubOwner",       "name": { "text": "GitHub owner" },         "isVisible": true },
     { "id": "repo",              "name": { "text": "Repository URL" },       "isVisible": true },
     { "id": "framework",         "name": { "text": "Target framework" },     "isVisible": true },
     { "id": "includeBenchmarks", "name": { "text": "Include benchmarks project" }, "isVisible": true },

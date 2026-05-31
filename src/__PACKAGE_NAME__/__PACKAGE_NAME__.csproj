@@ -16,7 +16,8 @@
     <None Include="..\..\LICENSE" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
-  <ItemGroup Label="Analyzers + versioning (build-only, not published)">
+  <ItemGroup Label="Runtime dependency + analyzers + versioning">
+    <PackageReference Include="Atya.Foundation.Guards" />
     <PackageReference Include="Atya.Governance.CodeQuality" PrivateAssets="all" />
     <PackageReference Include="MinVer" PrivateAssets="all" Condition="'$(RepositoryHasGitDirectory)' == 'true'" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" Condition="'$(RepositoryHasGitDirectory)' == 'true'" />

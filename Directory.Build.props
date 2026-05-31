@@ -5,14 +5,14 @@
     Per-project overrides belong in the .csproj or a scoped Directory.Build.props.
   -->
 
-  <PropertyGroup Label="Framework and language">
+  <PropertyGroup Label="Framework and language" Condition="'$(PackageType)' != 'Template'">
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <PropertyGroup Label="Build quality">
+  <PropertyGroup Label="Build quality" Condition="'$(PackageType)' != 'Template'">
     <RepositoryHasGitDirectory Condition="'$(RepositoryHasGitDirectory)' == '' And Exists('$(MSBuildThisFileDirectory).git')">true</RepositoryHasGitDirectory>
     <RepositoryHasGitDirectory Condition="'$(RepositoryHasGitDirectory)' == ''">false</RepositoryHasGitDirectory>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
@@ -23,12 +23,12 @@
     <TreatWarningsAsErrors Condition="'$(IsPackable)' == 'true'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <PropertyGroup Label="Restore">
+  <PropertyGroup Label="Restore" Condition="'$(PackageType)' != 'Template'">
     <!-- Set UseLockFiles=true to opt into per-project packages.lock.json. In CI, combine with RestoreLockedMode=true for reproducible restores. -->
     <RestorePackagesWithLockFile Condition="'$(UseLockFiles)' == 'true'">true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
-  <PropertyGroup Label="Packaging defaults">
+  <PropertyGroup Label="Packaging defaults" Condition="'$(PackageType)' != 'Template'">
     <IsPackable>false</IsPackable>
     <Authors>__PACKAGE_AUTHORS__</Authors>
     <Company>__PACKAGE_COMPANY__</Company>
@@ -50,7 +50,7 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
-  <PropertyGroup Label="Trim/AOT opt-ins (per-project)">
+  <PropertyGroup Label="Trim/AOT opt-ins (per-project)" Condition="'$(PackageType)' != 'Template'">
     <!-- Turn these on in a leaf .csproj when the package is AOT/trim-safe. -->
     <!-- <IsTrimmable>true</IsTrimmable> -->
     <!-- <IsAotCompatible>true</IsAotCompatible> -->

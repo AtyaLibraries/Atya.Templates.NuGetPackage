@@ -1,0 +1,14 @@
+changelog:
+  categories:
+    - title: Features
+      labels:
+        - enhancement
+    - title: Fixes
+      labels:
+        - bug
+    - title: Internal
+      labels:
+        - chore
+    - title: Dependencies
+      labels:
+        - dependencies

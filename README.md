@@ -16,7 +16,12 @@ __PACKAGE_DESCRIPTION__
 |-- tests/__PACKAGE_NAME__.UnitTests/              # Starter unit test project
 |-- samples/__PACKAGE_NAME__.Samples.Console/      # Starter sample app
 |-- benchmarks/__PACKAGE_NAME__.Benchmarks/        # Optional BenchmarkDotNet project
-`-- .github/                                       # Optional CI/release config
+|-- .github/                                       # Optional CI/release config
+|-- CHANGELOG.md                                   # Release history
+|-- SECURITY.md                                    # Vulnerability reporting
+|-- CONTRIBUTING.md                                # Contribution workflow
+|-- bootstrap.ps1                                  # One-time GitHub repository setup
+`-- nuget.config                                   # nuget.org-only package source
 ```
 
 ## Starter Content
@@ -26,6 +31,16 @@ package implementation without first removing fake public APIs.
 
 Replace the starter tests, sample, benchmarks, and README sections with
 package-specific content before shipping the package.
+
+## First-time setup
+
+After creating the repository and pushing `development` and `master`, run:
+
+```powershell
+./bootstrap.ps1 -RepoOwner __GITHUB_OWNER__ -RepoName __PACKAGE_NAME__
+```
+
+Pass `-NugetApiKey` to set the `NUGET_API_KEY` GitHub secret during setup.
 
 ## Build, test, pack
 

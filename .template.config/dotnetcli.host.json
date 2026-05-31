@@ -5,6 +5,7 @@
     "authors":           { "longName": "authors",            "shortName": "a" },
     "company":           { "longName": "company",            "shortName": "c" },
     "tags":              { "longName": "tags",               "shortName": "t" },
+    "githubOwner":       { "longName": "github-owner" },
     "repo":              { "longName": "repository",         "shortName": "r" },
     "framework":         { "longName": "framework",          "shortName": "f" },
     "includeBenchmarks": { "longName": "include-benchmarks" },
