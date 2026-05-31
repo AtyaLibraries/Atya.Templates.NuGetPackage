@@ -87,6 +87,20 @@ jobs:
           targetdir: artifacts/coverage-report
           reporttypes: HtmlInline;MarkdownSummaryGithub;Cobertura
 
+      - name: Enforce coverage threshold
+        if: matrix.os == 'ubuntu-latest'
+        shell: pwsh
+        run: |
+          [xml]$coverage = Get-Content -Path artifacts/coverage-report/Cobertura.xml
+          $lineRate = [double]$coverage.coverage.'line-rate'
+          $lineCoverage = [math]::Round($lineRate * 100, 2)
+
+          if ($lineCoverage -lt 80) {
+            throw "Line coverage is $lineCoverage%; required minimum is 80%."
+          }
+
+          Write-Host "Line coverage is $lineCoverage%; required minimum is 80%."
+
       - name: Publish coverage summary
         if: matrix.os == 'ubuntu-latest'
         shell: bash

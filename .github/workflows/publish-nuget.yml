@@ -155,6 +155,13 @@ jobs:
           "-p:MinVerVersionOverride=$env:PACKAGE_VERSION"
           -p:EnablePackageValidation=true
 
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: artifacts/packages/sbom.cdx.json
+
       - name: Verify stable package version
         shell: pwsh
         run: |
@@ -181,6 +188,7 @@ jobs:
           path: |
             .\artifacts\packages\*.nupkg
             .\artifacts\packages\*.snupkg
+            .\artifacts\packages\sbom.cdx.json
           if-no-files-found: error
 
       - name: Publish to nuget.org
@@ -221,3 +229,4 @@ jobs:
           files: |
             artifacts/packages/*.nupkg
             artifacts/packages/*.snupkg
+            artifacts/packages/sbom.cdx.json
