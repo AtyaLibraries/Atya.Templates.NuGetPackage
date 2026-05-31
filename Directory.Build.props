@@ -50,6 +50,12 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
+  <PropertyGroup Label="Repository URL guard" Condition="'$(PackageType)' != 'Template'">
+    <!-- The raw template contains __REPOSITORY_URL__; SourceLink should run only after the template is rendered. -->
+    <RepositoryUrlIsConfigured Condition="'$(RepositoryUrl)' != '' And !$(RepositoryUrl.Contains('__REPOSITORY_URL__'))">true</RepositoryUrlIsConfigured>
+    <RepositoryUrlIsConfigured Condition="'$(RepositoryUrlIsConfigured)' == ''">false</RepositoryUrlIsConfigured>
+  </PropertyGroup>
+
   <PropertyGroup Label="Trim/AOT opt-ins (per-project)" Condition="'$(PackageType)' != 'Template'">
     <!-- Turn these on in a leaf .csproj when the package is AOT/trim-safe. -->
     <!-- <IsTrimmable>true</IsTrimmable> -->

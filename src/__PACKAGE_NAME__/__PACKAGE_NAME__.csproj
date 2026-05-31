@@ -20,7 +20,7 @@
     <PackageReference Include="Atya.Foundation.Guards" />
     <PackageReference Include="Atya.Governance.CodeQuality" PrivateAssets="all" />
     <PackageReference Include="MinVer" PrivateAssets="all" Condition="'$(RepositoryHasGitDirectory)' == 'true'" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" Condition="'$(RepositoryHasGitDirectory)' == 'true'" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" Condition="'$(RepositoryHasGitDirectory)' == 'true' And '$(RepositoryUrlIsConfigured)' == 'true'" />
   </ItemGroup>
 
 </Project>
