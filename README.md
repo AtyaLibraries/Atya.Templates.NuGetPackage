@@ -29,11 +29,17 @@ package-specific content before shipping the package.
 
 ## Build, test, pack
 
+The package currently targets `net10.0`. CI restores, audits vulnerable
+packages, checks formatting, builds, tests with coverage, enforces 80% line
+coverage, packs with package validation, runs CodeQL, and publishes release
+artifacts with an SBOM and build provenance attestation.
+
 ```bash
 dotnet restore
+dotnet format --verify-no-changes
 dotnet build --configuration Release --no-restore
 dotnet test --configuration Release --no-build
-dotnet pack ./src/__PACKAGE_NAME__/__PACKAGE_NAME__.csproj --configuration Release --no-build --output artifacts/packages
+dotnet pack ./src/__PACKAGE_NAME__/__PACKAGE_NAME__.csproj --configuration Release --no-build --output artifacts/packages -p:EnablePackageValidation=true
 ```
 
 Artifacts land in `artifacts/packages/`.
