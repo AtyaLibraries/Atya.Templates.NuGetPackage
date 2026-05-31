@@ -1,0 +1,49 @@
+<Project>
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <PackageId>Atya.Templates.NuGetPackage</PackageId>
+    <Title>Atya NuGet Package Template</Title>
+    <Authors>Arsen Asulyan</Authors>
+    <Company>Atya</Company>
+    <Description>Production-ready .NET 10 NuGet package starter.</Description>
+    <PackageProjectUrl>https://github.com/AtyaLibraries/Atya.Templates.NuGetPackage</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/AtyaLibraries/Atya.Templates.NuGetPackage</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>PACKAGE_README.md</PackageReadmeFile>
+    <!-- <PackageIcon>icon.png</PackageIcon> -->
+    <PackageVersion>1.0.0</PackageVersion>
+    <Version>$(PackageVersion)</Version>
+    <PackageTags>dotnet;template;nuget;package;net10</PackageTags>
+    <IsPackable>true</IsPackable>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <NoWarn>$(NoWarn);CS2008;NU5128;NU5110;NU5111</NoWarn>
+    <MinVerTagPrefix>v</MinVerTagPrefix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="**/*"
+             Exclude="bin/**;obj/**;artifacts/**;**/bin/**;**/obj/**;**/artifacts/**;.git;.git/**;.vs;.vs/**;.idea;.idea/**;.tmp;.tmp/**;PACKAGE_README.md;icon.png;Atya.Templates.NuGetPackage.csproj;template-smoke-test.ps1;.github/workflows/test-template.yml;.github/workflows/publish-template.yml" />
+    <None Include="PACKAGE_README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MinVer" PrivateAssets="all" Condition="Exists('$(MSBuildThisFileDirectory).git')" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>

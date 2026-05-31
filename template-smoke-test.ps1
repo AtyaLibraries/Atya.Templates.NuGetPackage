@@ -26,25 +26,26 @@ param(
 $ErrorActionPreference = "Stop"
 $templateRoot  = $PSScriptRoot
 $repoRoot      = Resolve-Path $templateRoot
-$scratch       = Join-Path ([System.IO.Path]::GetTempPath()) "abnp-smoke-$([guid]::NewGuid().ToString('N').Substring(0,8))"
+$scratch       = Join-Path ([System.IO.Path]::GetTempPath()) "atya-nuget-smoke-$([guid]::NewGuid().ToString('N').Substring(0,8))"
 
 Write-Host "Template root: $templateRoot" -ForegroundColor Cyan
 Write-Host "Repo root    : $repoRoot" -ForegroundColor Cyan
 Write-Host "Scratch dir  : $scratch" -ForegroundColor Cyan
 
 try {
-    Write-Host "`n[1/5] Installing template from $repoRoot..." -ForegroundColor Yellow
+    Write-Host "`n[1/6] Installing template from $repoRoot..." -ForegroundColor Yellow
     dotnet new install "$repoRoot" --force | Out-Null
 
-    Write-Host "`n[2/5] Generating package '$PackageName' into $scratch..." -ForegroundColor Yellow
+    Write-Host "`n[2/6] Generating package '$PackageName' into $scratch..." -ForegroundColor Yellow
     New-Item -ItemType Directory -Path $scratch | Out-Null
     $newArgs = @(
-        "new", "abnp-package",
+        "new", "atya-nuget",
         "--name", $PackageName,
         "--output", $scratch,
         "--framework", $Framework,
         "--authors", "Smoke Tester",
         "--company", "SmokeCo",
+        "--github-owner", "AtyaLibraries",
         "--repository", "https://example.invalid/$PackageName",
         "--skip-restore"
     )
@@ -55,17 +56,39 @@ try {
 
     dotnet @newArgs
 
-    Write-Host "`n[3/5] Verifying no unresolved template placeholders remain..." -ForegroundColor Yellow
+    Write-Host "`n[3/6] Verifying no unresolved template placeholders remain..." -ForegroundColor Yellow
     $placeholderMatches = Get-ChildItem -Path $scratch -Recurse -File |
         Where-Object { $_.FullName -notmatch '\\(bin|obj|artifacts)\\' } |
-        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__REPOSITORY_URL__'
+        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__GITHUB_OWNER__|__REPOSITORY_URL__|__PACKAGE_MARKER_NAME__'
 
     if ($placeholderMatches) {
         $details = $placeholderMatches | ForEach-Object { "$($_.Path):$($_.LineNumber):$($_.Line.Trim())" }
         throw "Template placeholders remain in generated output:`n$($details -join "`n")"
     }
 
-    Write-Host "`n[4/5] Building and testing generated repository..." -ForegroundColor Yellow
+    Write-Host "`n[4/6] Verifying generated repository scaffolding..." -ForegroundColor Yellow
+    $expectedFiles = @(
+        "bootstrap.ps1",
+        "CHANGELOG.md",
+        "SECURITY.md",
+        "CONTRIBUTING.md",
+        ".github/CODEOWNERS",
+        ".github/pull_request_template.md",
+        ".github/release.yml",
+        "nuget.config",
+        "src/$PackageName/$PackageName.cs",
+        "src/$PackageName/Properties/AssemblyInfo.cs"
+    )
+
+    $missingFiles = $expectedFiles | Where-Object {
+        -not (Test-Path (Join-Path $scratch $_))
+    }
+
+    if ($missingFiles) {
+        throw "Expected generated files are missing:`n$($missingFiles -join "`n")"
+    }
+
+    Write-Host "`n[5/6] Building and testing generated repository..." -ForegroundColor Yellow
     Push-Location $scratch
     try {
         dotnet restore ".\$PackageName.sln" --verbosity minimal
@@ -76,7 +99,7 @@ try {
         Pop-Location
     }
 
-    Write-Host "`n[5/5] Packing generated repository..." -ForegroundColor Yellow
+    Write-Host "`n[6/6] Packing generated repository..." -ForegroundColor Yellow
     Push-Location $scratch
     try {
         dotnet pack ".\src\$PackageName\$PackageName.csproj" --configuration Release --no-build --output .\artifacts\packages --verbosity minimal

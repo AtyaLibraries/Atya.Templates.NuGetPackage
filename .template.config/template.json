@@ -6,9 +6,9 @@
     "Library",
     "Package"
   ],
-  "identity": "Atya.Templates.AbnpPackage",
-  "name": "Atya package",
-  "shortName": "abnp-package",
+  "identity": "Atya.Templates.NuGetPackage",
+  "name": "Atya NuGet Package",
+  "shortName": "atya-nuget",
   "sourceName": "__PACKAGE_NAME__",
   "preferNameDirectory": true,
   "description": "Creates a production-ready .NET package repository with source, tests, samples, optional benchmarks, central package management, and GitHub CI/release workflows.",
@@ -29,15 +29,24 @@
         ".template.config/**",
         ".template.variants/**",
         ".claude/**",
+        ".tmp",
         ".tmp/**",
         "README.template.md",
         "template-smoke-test.ps1",
+        "Atya.Templates.NuGetPackage.csproj",
+        "PACKAGE_README.md",
+        "icon.png",
+        ".github/workflows/test-template.yml",
+        ".github/workflows/publish-template.yml",
         "__PACKAGE_NAME__.sln",
         "**/[Bb]in/**",
         "**/[Oo]bj/**",
         "**/artifacts/**",
+        ".git",
         ".git/**",
+        ".vs",
         ".vs/**",
+        ".idea",
         ".idea/**"
       ],
       "modifiers": [
@@ -113,13 +122,43 @@
       "defaultValue": "dotnet;atya",
       "replaces": "__PACKAGE_TAGS__"
     },
+    "githubOwner": {
+      "type": "parameter",
+      "datatype": "text",
+      "displayName": "GitHub owner",
+      "description": "GitHub org or user that hosts the generated repository.",
+      "defaultValue": "AtyaLibraries",
+      "replaces": "__GITHUB_OWNER__"
+    },
     "repo": {
       "type": "parameter",
       "datatype": "text",
       "displayName": "Repository URL",
-      "description": "Repository URL used in package metadata and SourceLink.",
-      "defaultValue": "https://github.com/AtyaLibraries/__PACKAGE_NAME__",
-      "replaces": "__REPOSITORY_URL__"
+      "description": "Optional repository URL override used in package metadata and SourceLink.",
+      "defaultValue": ""
+    },
+    "defaultRepositoryUrl": {
+      "type": "generated",
+      "generator": "join",
+      "parameters": {
+        "symbols": [
+          { "type": "const", "value": "https://github.com" },
+          { "type": "ref", "value": "githubOwner" },
+          { "type": "ref", "value": "name" }
+        ],
+        "separator": "/",
+        "removeEmptyValues": true
+      }
+    },
+    "repositoryUrl": {
+      "type": "generated",
+      "generator": "coalesce",
+      "replaces": "__REPOSITORY_URL__",
+      "parameters": {
+        "sourceVariableName": "repo",
+        "fallbackVariableName": "defaultRepositoryUrl",
+        "defaultValue": ""
+      }
     },
     "framework": {
       "type": "parameter",
@@ -190,6 +229,31 @@
       "generator": "guid",
       "replaces": "__SOLUTION_GUID__",
       "parameters": { "format": "D" }
+    },
+    "packageMarkerName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "PackageMarkerName",
+      "replaces": "__PACKAGE_MARKER_NAME__"
+    }
+  },
+  "forms": {
+    "PackageNameAfterLastDot": {
+      "identifier": "replace",
+      "pattern": "^.*\\.(?=[^\\.]+$)",
+      "replacement": ""
+    },
+    "NonIdentifierToUnderscore": {
+      "identifier": "replace",
+      "pattern": "[^A-Za-z0-9_]",
+      "replacement": "_"
+    },
+    "PackageMarkerName": {
+      "identifier": "chain",
+      "steps": [
+        "PackageNameAfterLastDot",
+        "NonIdentifierToUnderscore"
+      ]
     }
   },
   "postActions": [

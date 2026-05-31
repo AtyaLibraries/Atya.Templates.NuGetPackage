@@ -18,7 +18,7 @@ public class TemplateBenchmarks
     private const string Value = "__PACKAGE_NAME__";
 
     [Benchmark]
-    public int ReadStarterValueLength()
+    public static int ReadStarterValueLength()
     {
         return Value.Length;
     }
