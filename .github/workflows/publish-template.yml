@@ -154,10 +154,19 @@ jobs:
             throw "The NUGET_API_KEY repository secret is required."
           }
 
-          dotnet nuget push "./artifacts/packages/*.nupkg" `
+          $packages = @(Get-ChildItem -Path ./artifacts/packages -Filter "*.nupkg")
+          if ($packages.Count -ne 1) {
+            throw "Expected exactly one template package, found $($packages.Count)."
+          }
+
+          dotnet nuget push "$($packages[0].FullName)" `
             --api-key "$env:NUGET_API_KEY" `
             --source https://api.nuget.org/v3/index.json `
             --skip-duplicate
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
 
       - name: Create version tag
         if: env.CREATE_VERSION_TAG == 'true'
