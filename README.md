@@ -46,8 +46,9 @@ Pass `-NugetApiKey` to set the `NUGET_API_KEY` GitHub secret during setup.
 
 The package currently targets `net10.0`. CI restores, audits vulnerable
 packages, checks formatting, builds, tests with coverage, enforces 80% line
-coverage, packs with package validation, runs CodeQL, and publishes release
-artifacts with an SBOM and build provenance attestation.
+coverage, packs with package validation, runs CodeQL for public repositories
+or when `CODEQL_ENABLED=true`, and publishes release artifacts with an SBOM
+and build provenance attestation.
 
 ```bash
 dotnet restore
