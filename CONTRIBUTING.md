@@ -17,5 +17,5 @@ Use the restore, build, test, and pack commands documented in `README.md`.
 When benchmarks are included, run:
 
 ```bash
-dotnet run --configuration Release --project ./benchmarks/__PACKAGE_NAME__.Benchmarks/__PACKAGE_NAME__.Benchmarks.csproj
+dotnet run --configuration Release --project ./benchmarks/Atya.Templates.NuGetPackage.Benchmarks/Atya.Templates.NuGetPackage.Benchmarks.csproj
 ```

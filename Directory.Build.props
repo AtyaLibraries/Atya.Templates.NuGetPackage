@@ -13,6 +13,8 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Build quality" Condition="'$(PackageType)' != 'Template'">
+    <IsTemplateSourceRepository Condition="'$(IsTemplateSourceRepository)' == '' And Exists('$(MSBuildThisFileDirectory)Atya.Templates.NuGetPackage.csproj')">true</IsTemplateSourceRepository>
+    <IsTemplateSourceRepository Condition="'$(IsTemplateSourceRepository)' == ''">false</IsTemplateSourceRepository>
     <RepositoryHasGitDirectory Condition="'$(RepositoryHasGitDirectory)' == '' And Exists('$(MSBuildThisFileDirectory).git')">true</RepositoryHasGitDirectory>
     <RepositoryHasGitDirectory Condition="'$(RepositoryHasGitDirectory)' == ''">false</RepositoryHasGitDirectory>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
@@ -21,6 +23,7 @@
     <ContinuousIntegrationBuild Condition="'$(CI)' == 'true'">true</ContinuousIntegrationBuild>
     <!-- Strict on shipped code; relaxed on tests/samples so a warning does not block experiments. -->
     <TreatWarningsAsErrors Condition="'$(IsPackable)' == 'true'">true</TreatWarningsAsErrors>
+    <NoWarn Condition="'$(IsTemplateSourceRepository)' == 'true'">$(NoWarn);CA1707;SA1300</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Label="Restore" Condition="'$(PackageType)' != 'Template'">

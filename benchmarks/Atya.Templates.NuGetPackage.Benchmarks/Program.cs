@@ -1,7 +1,7 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 
-namespace __PACKAGE_NAME__.Benchmarks;
+namespace Atya.Templates.NuGetPackage.Benchmarks;
 
 public static class Program
 {
@@ -15,11 +15,11 @@ public static class Program
 [MemoryDiagnoser]
 public class TemplateBenchmarks
 {
-    private const string Value = "__PACKAGE_NAME__";
+    private readonly string _value = "Atya.Templates.NuGetPackage";
 
     [Benchmark]
-    public static int ReadStarterValueLength()
+    public int ReadStarterValueLength()
     {
-        return Value.Length;
+        return _value.Length;
     }
 }

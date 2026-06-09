@@ -28,13 +28,30 @@ $templateRoot  = $PSScriptRoot
 $repoRoot      = Resolve-Path $templateRoot
 $scratch       = Join-Path ([System.IO.Path]::GetTempPath()) "atya-nuget-smoke-$([guid]::NewGuid().ToString('N').Substring(0,8))"
 
+function Invoke-NativeCommand {
+    param(
+        [Parameter(Mandatory = $true)]
+        [scriptblock]$Command,
+
+        [Parameter(Mandatory = $true)]
+        [string]$Description
+    )
+
+    & $Command
+    if ($LASTEXITCODE -ne 0) {
+        throw "$Description failed with exit code $LASTEXITCODE."
+    }
+}
+
 Write-Host "Template root: $templateRoot" -ForegroundColor Cyan
 Write-Host "Repo root    : $repoRoot" -ForegroundColor Cyan
 Write-Host "Scratch dir  : $scratch" -ForegroundColor Cyan
 
 try {
     Write-Host "`n[1/6] Installing template from $repoRoot..." -ForegroundColor Yellow
-    dotnet new install "$repoRoot" --force | Out-Null
+    Invoke-NativeCommand -Description "Template installation" -Command {
+        dotnet new install "$repoRoot" --force | Out-Null
+    }
 
     Write-Host "`n[2/6] Generating package '$PackageName' into $scratch..." -ForegroundColor Yellow
     New-Item -ItemType Directory -Path $scratch | Out-Null
@@ -46,7 +63,6 @@ try {
         "--authors", "Smoke Tester",
         "--company", "SmokeCo",
         "--github-owner", "AtyaLibraries",
-        "--repository", "https://example.invalid/$PackageName",
         "--skip-restore"
     )
 
@@ -54,12 +70,14 @@ try {
         $newArgs += @("--include-benchmarks", "false")
     }
 
-    dotnet @newArgs
+    Invoke-NativeCommand -Description "Template generation" -Command {
+        dotnet @newArgs
+    }
 
     Write-Host "`n[3/6] Verifying no unresolved template placeholders remain..." -ForegroundColor Yellow
     $placeholderMatches = Get-ChildItem -Path $scratch -Recurse -File |
         Where-Object { $_.FullName -notmatch '\\(bin|obj|artifacts)\\' } |
-        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__GITHUB_OWNER__|__REPOSITORY_URL__|__PACKAGE_MARKER_NAME__'
+        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__GITHUB_OWNER__|__REPOSITORY_URL__|__PACKAGE_MARKER_NAME__|Atya\.Templates\.NuGetPackage'
 
     if ($placeholderMatches) {
         $details = $placeholderMatches | ForEach-Object { "$($_.Path):$($_.LineNumber):$($_.Line.Trim())" }
@@ -88,12 +106,33 @@ try {
         throw "Expected generated files are missing:`n$($missingFiles -join "`n")"
     }
 
+    [xml]$packageProject = Get-Content -Path (Join-Path $scratch "src\$PackageName\$PackageName.csproj")
+    $packageId = $packageProject.SelectSingleNode("/Project/PropertyGroup/PackageId").InnerText.Trim()
+
+    if ($packageId -ne $PackageName) {
+        throw "Expected PackageId '$PackageName', found '$packageId'."
+    }
+
+    [xml]$buildProps = Get-Content -Path (Join-Path $scratch "Directory.Build.props")
+    $repositoryUrl = $buildProps.SelectSingleNode("/Project/PropertyGroup/RepositoryUrl").InnerText.Trim()
+    $expectedRepositoryUrl = "https://github.com/AtyaLibraries/$PackageName"
+
+    if ($repositoryUrl -ne $expectedRepositoryUrl) {
+        throw "Expected RepositoryUrl '$expectedRepositoryUrl', found '$repositoryUrl'."
+    }
+
     Write-Host "`n[5/6] Building and testing generated repository..." -ForegroundColor Yellow
     Push-Location $scratch
     try {
-        dotnet restore ".\$PackageName.sln" --verbosity minimal
-        dotnet build ".\$PackageName.sln" --configuration Release --no-restore --verbosity minimal
-        dotnet test ".\tests\$PackageName.UnitTests\$PackageName.UnitTests.csproj" --configuration Release --no-build --verbosity minimal
+        Invoke-NativeCommand -Description "Restore" -Command {
+            dotnet restore ".\$PackageName.sln" --verbosity minimal
+        }
+        Invoke-NativeCommand -Description "Release build" -Command {
+            dotnet build ".\$PackageName.sln" --configuration Release --no-restore --verbosity minimal
+        }
+        Invoke-NativeCommand -Description "Unit tests" -Command {
+            dotnet test ".\tests\$PackageName.UnitTests\$PackageName.UnitTests.csproj" --configuration Release --no-build --verbosity minimal
+        }
     }
     finally {
         Pop-Location
@@ -102,7 +141,9 @@ try {
     Write-Host "`n[6/6] Packing generated repository..." -ForegroundColor Yellow
     Push-Location $scratch
     try {
-        dotnet pack ".\src\$PackageName\$PackageName.csproj" --configuration Release --no-build --output .\artifacts\packages --verbosity minimal
+        Invoke-NativeCommand -Description "Package creation" -Command {
+            dotnet pack ".\src\$PackageName\$PackageName.csproj" --configuration Release --no-build --output .\artifacts\packages --verbosity minimal
+        }
 
         $nupkg = Get-ChildItem -Path .\artifacts\packages -Filter "*.nupkg"
         $snupkg = Get-ChildItem -Path .\artifacts\packages -Filter "*.snupkg"

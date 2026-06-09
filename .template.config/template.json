@@ -9,12 +9,12 @@
   "identity": "Atya.Templates.NuGetPackage",
   "name": "Atya NuGet Package",
   "shortName": "atya-nuget",
-  "sourceName": "__PACKAGE_NAME__",
+  "sourceName": "Atya.Templates.NuGetPackage",
   "preferNameDirectory": true,
-  "description": "Creates a production-ready .NET package repository with source, tests, samples, optional benchmarks, central package management, and GitHub CI/release workflows.",
+  "description": "Creates a production-ready .NET package repository with source, tests, samples, benchmarks, central package management, and GitHub CI/release workflows.",
   "primaryOutputs": [
     {
-      "path": "__PACKAGE_NAME__.sln"
+      "path": "Atya.Templates.NuGetPackage.sln"
     }
   ],
   "tags": {
@@ -38,7 +38,7 @@
         "icon.png",
         ".github/workflows/test-template.yml",
         ".github/workflows/publish-template.yml",
-        "__PACKAGE_NAME__.sln",
+        "Atya.Templates.NuGetPackage.sln",
         "**/[Bb]in/**",
         "**/[Oo]bj/**",
         "**/artifacts/**",
@@ -227,7 +227,7 @@
     "SolutionGuid": {
       "type": "generated",
       "generator": "guid",
-      "replaces": "__SOLUTION_GUID__",
+      "replaces": "C4D89AE8-AFEA-4B36-82D9-2BBF683661B0",
       "parameters": { "format": "D" }
     },
     "packageMarkerName": {
