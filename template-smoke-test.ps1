@@ -8,25 +8,20 @@
   to a CI check for the template repo.
 .EXAMPLE
   ./template-smoke-test.ps1
-  ./template-smoke-test.ps1 -Framework net10.0 -KeepOutput
-  ./template-smoke-test.ps1 -ExcludeBenchmarks
+  ./template-smoke-test.ps1 -KeepOutput
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet("net10.0")]
-    [string]$Framework = "net10.0",
-
     [string]$PackageName = "Atya.SmokeTest.Pkg",
 
-    [switch]$KeepOutput,
-
-    [switch]$ExcludeBenchmarks
+    [switch]$KeepOutput
 )
 
 $ErrorActionPreference = "Stop"
 $templateRoot  = $PSScriptRoot
 $repoRoot      = Resolve-Path $templateRoot
-$scratch       = Join-Path ([System.IO.Path]::GetTempPath()) "abnp-smoke-$([guid]::NewGuid().ToString('N').Substring(0,8))"
+$scratch       = Join-Path ([System.IO.Path]::GetTempPath()) "atya-nuget-smoke-$([guid]::NewGuid().ToString('N').Substring(0,8))"
+$generatedRoot = Join-Path $scratch $PackageName
 
 Write-Host "Template root: $templateRoot" -ForegroundColor Cyan
 Write-Host "Repo root    : $repoRoot" -ForegroundColor Cyan
@@ -38,35 +33,41 @@ try {
 
     Write-Host "`n[2/5] Generating package '$PackageName' into $scratch..." -ForegroundColor Yellow
     New-Item -ItemType Directory -Path $scratch | Out-Null
-    $newArgs = @(
-        "new", "abnp-package",
-        "--name", $PackageName,
-        "--output", $scratch,
-        "--framework", $Framework,
-        "--authors", "Smoke Tester",
-        "--company", "SmokeCo",
-        "--repository", "https://example.invalid/$PackageName",
-        "--skip-restore"
-    )
-
-    if ($ExcludeBenchmarks) {
-        $newArgs += @("--include-benchmarks", "false")
+    Push-Location $scratch
+    try {
+        dotnet new atya-nuget --name $PackageName
+    }
+    finally {
+        Pop-Location
     }
 
-    dotnet @newArgs
-
     Write-Host "`n[3/5] Verifying no unresolved template placeholders remain..." -ForegroundColor Yellow
-    $placeholderMatches = Get-ChildItem -Path $scratch -Recurse -File |
+    $placeholderMatches = Get-ChildItem -Path $generatedRoot -Recurse -File |
         Where-Object { $_.FullName -notmatch '\\(bin|obj|artifacts)\\' } |
-        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__REPOSITORY_URL__'
+        Select-String -Pattern '__[A-Z_]+__'
 
     if ($placeholderMatches) {
         $details = $placeholderMatches | ForEach-Object { "$($_.Path):$($_.LineNumber):$($_.Line.Trim())" }
         throw "Template placeholders remain in generated output:`n$($details -join "`n")"
     }
 
+    [xml]$packageProject = Get-Content -Path (Join-Path $generatedRoot "src\$PackageName\$PackageName.csproj")
+    $packageId = $packageProject.SelectSingleNode("/Project/PropertyGroup/PackageId").InnerText.Trim()
+
+    if ($packageId -ne $PackageName) {
+        throw "Expected PackageId '$PackageName', found '$packageId'."
+    }
+
+    [xml]$buildProps = Get-Content -Path (Join-Path $generatedRoot "Directory.Build.props")
+    $repositoryUrl = $buildProps.SelectSingleNode("/Project/PropertyGroup/RepositoryUrl").InnerText.Trim()
+    $expectedRepositoryUrl = "https://github.com/AtyaLibraries/$PackageName"
+
+    if ($repositoryUrl -ne $expectedRepositoryUrl) {
+        throw "Expected RepositoryUrl '$expectedRepositoryUrl', found '$repositoryUrl'."
+    }
+
     Write-Host "`n[4/5] Building and testing generated repository..." -ForegroundColor Yellow
-    Push-Location $scratch
+    Push-Location $generatedRoot
     try {
         dotnet restore ".\$PackageName.sln" --verbosity minimal
         dotnet build ".\$PackageName.sln" --configuration Release --no-restore --verbosity minimal
@@ -77,7 +78,7 @@ try {
     }
 
     Write-Host "`n[5/5] Packing generated repository..." -ForegroundColor Yellow
-    Push-Location $scratch
+    Push-Location $generatedRoot
     try {
         dotnet pack ".\src\$PackageName\$PackageName.csproj" --configuration Release --no-build --output .\artifacts\packages --verbosity minimal
 
@@ -106,6 +107,6 @@ finally {
         Write-Host "Cleaned scratch dir." -ForegroundColor DarkGray
     }
     elseif ($KeepOutput) {
-        Write-Host "Scratch dir kept at: $scratch" -ForegroundColor DarkGray
+        Write-Host "Generated repository kept at: $generatedRoot" -ForegroundColor DarkGray
     }
 }

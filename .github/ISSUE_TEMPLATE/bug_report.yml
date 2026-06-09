@@ -1,5 +1,5 @@
 name: Bug report
-description: Something in __PACKAGE_NAME__ is broken.
+description: Something in Atya.PackageTemplate is broken.
 labels: [bug, triage]
 body:
   - type: textarea

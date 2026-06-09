@@ -30,12 +30,12 @@
 
   <PropertyGroup Label="Packaging defaults">
     <IsPackable>false</IsPackable>
-    <Authors>__PACKAGE_AUTHORS__</Authors>
-    <Company>__PACKAGE_COMPANY__</Company>
-    <Copyright>Copyright (c) __COPYRIGHT_YEAR__ __PACKAGE_AUTHORS__</Copyright>
-    <Description>__PACKAGE_DESCRIPTION__</Description>
-    <PackageTags>__PACKAGE_TAGS__</PackageTags>
-    <RepositoryUrl>__REPOSITORY_URL__</RepositoryUrl>
+    <Authors>Atya</Authors>
+    <Company>Atya</Company>
+    <Copyright>Copyright (c) 2026 Atya</Copyright>
+    <Description>A reusable .NET package from Atya.</Description>
+    <PackageTags>dotnet;atya</PackageTags>
+    <RepositoryUrl>https://github.com/AtyaLibraries/Atya.PackageTemplate</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

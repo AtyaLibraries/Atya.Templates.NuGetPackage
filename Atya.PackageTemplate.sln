@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.6.11709.129
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "__PACKAGE_NAME__", "src\__PACKAGE_NAME__\__PACKAGE_NAME__.csproj", "{467BAA01-26E2-4EC3-928C-70A5EAA36811}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atya.PackageTemplate", "src\Atya.PackageTemplate\Atya.PackageTemplate.csproj", "{467BAA01-26E2-4EC3-928C-70A5EAA36811}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "__PACKAGE_NAME__.UnitTests", "tests\__PACKAGE_NAME__.UnitTests\__PACKAGE_NAME__.UnitTests.csproj", "{8B6A28EE-7818-4DE7-B3BE-279B436A17F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atya.PackageTemplate.UnitTests", "tests\Atya.PackageTemplate.UnitTests\Atya.PackageTemplate.UnitTests.csproj", "{8B6A28EE-7818-4DE7-B3BE-279B436A17F3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Folder", "Solution Folder", "{4F61F403-4674-487B-ABF4-EE50B96981C1}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,12 +12,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Folder", "Solution
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		.github\workflows\ci.yml = .github\workflows\ci.yml
-		.github\workflows\publish-nuget.yml = .github\workflows\publish-nuget.yml
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
 		global.json = global.json
 		LICENSE = LICENSE
+		.github\workflows\publish-nuget.yml = .github\workflows\publish-nuget.yml
 		README.md = README.md
 	EndProjectSection
 EndProject
@@ -27,11 +27,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D196C703
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2C5AB38F-8197-4B93-AC0A-2182F5FAC5D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "__PACKAGE_NAME__.Samples.Console", "samples\__PACKAGE_NAME__.Samples.Console\__PACKAGE_NAME__.Samples.Console.csproj", "{177A9C18-53A6-459A-CC8D-01608DB20B5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atya.PackageTemplate.Samples.Console", "samples\Atya.PackageTemplate.Samples.Console\Atya.PackageTemplate.Samples.Console.csproj", "{177A9C18-53A6-459A-CC8D-01608DB20B5E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{4F208057-661E-4B8F-AD0C-9F56F92C6B00}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "__PACKAGE_NAME__.Benchmarks", "benchmarks\__PACKAGE_NAME__.Benchmarks\__PACKAGE_NAME__.Benchmarks.csproj", "{BA188AA0-3305-D033-CE4E-510CB0A17E3D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atya.PackageTemplate.Benchmarks", "benchmarks\Atya.PackageTemplate.Benchmarks\Atya.PackageTemplate.Benchmarks.csproj", "{BA188AA0-3305-D033-CE4E-510CB0A17E3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +66,6 @@ Global
 		{BA188AA0-3305-D033-CE4E-510CB0A17E3D} = {4F208057-661E-4B8F-AD0C-9F56F92C6B00}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {__SOLUTION_GUID__}
+		SolutionGuid = {C4D89AE8-AFEA-4B36-82D9-2BBF683661B0}
 	EndGlobalSection
 EndGlobal

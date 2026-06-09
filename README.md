@@ -1,22 +1,22 @@
-# __PACKAGE_NAME__
+# Atya.PackageTemplate
 
-__PACKAGE_DESCRIPTION__
+A reusable .NET package from Atya.
 
 | | |
 | --- | --- |
-| Repository | [__REPOSITORY_URL__](__REPOSITORY_URL__) |
-| NuGet | `__PACKAGE_NAME__` |
+| Repository | [https://github.com/AtyaLibraries/Atya.PackageTemplate](https://github.com/AtyaLibraries/Atya.PackageTemplate) |
+| NuGet | `Atya.PackageTemplate` |
 | License | MIT |
 
 ## Layout
 
 ```text
 .
-|-- src/__PACKAGE_NAME__/                          # The shipped library
-|-- tests/__PACKAGE_NAME__.UnitTests/              # Starter unit test project
-|-- samples/__PACKAGE_NAME__.Samples.Console/      # Starter sample app
-|-- benchmarks/__PACKAGE_NAME__.Benchmarks/        # Optional BenchmarkDotNet project
-`-- .github/                                       # Optional CI/release config
+|-- src/Atya.PackageTemplate/                      # The shipped library
+|-- tests/Atya.PackageTemplate.UnitTests/          # Starter unit test project
+|-- samples/Atya.PackageTemplate.Samples.Console/  # Starter sample app
+|-- benchmarks/Atya.PackageTemplate.Benchmarks/    # BenchmarkDotNet project
+`-- .github/                                       # CI/release configuration
 ```
 
 ## Starter Content
@@ -39,7 +39,7 @@ dotnet restore
 dotnet format --verify-no-changes
 dotnet build --configuration Release --no-restore
 dotnet test --configuration Release --no-build
-dotnet pack ./src/__PACKAGE_NAME__/__PACKAGE_NAME__.csproj --configuration Release --no-build --output artifacts/packages -p:EnablePackageValidation=true
+dotnet pack ./src/Atya.PackageTemplate/Atya.PackageTemplate.csproj --configuration Release --no-build --output artifacts/packages -p:EnablePackageValidation=true
 ```
 
 Artifacts land in `artifacts/packages/`.

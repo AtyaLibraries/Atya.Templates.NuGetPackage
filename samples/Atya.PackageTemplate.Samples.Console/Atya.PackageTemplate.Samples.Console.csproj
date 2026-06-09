@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\__PACKAGE_NAME__\__PACKAGE_NAME__.csproj" />
+    <ProjectReference Include="..\..\src\Atya.PackageTemplate\Atya.PackageTemplate.csproj" />
   </ItemGroup>
 
 </Project>
