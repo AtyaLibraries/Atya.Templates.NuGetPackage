@@ -19,9 +19,9 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   NUGET_XMLDOC_MODE: skip
-  SOLUTION_FILE: ./__PACKAGE_NAME__.sln
-  TEST_PROJECT: ./tests/__PACKAGE_NAME__.UnitTests/__PACKAGE_NAME__.UnitTests.csproj
-  PACKAGE_PROJECT: ./src/__PACKAGE_NAME__/__PACKAGE_NAME__.csproj
+  SOLUTION_FILE: ./Atya.Templates.NuGetPackage.sln
+  TEST_PROJECT: ./tests/Atya.Templates.NuGetPackage.UnitTests/Atya.Templates.NuGetPackage.UnitTests.csproj
+  PACKAGE_PROJECT: ./src/Atya.Templates.NuGetPackage/Atya.Templates.NuGetPackage.csproj
 
 jobs:
   build:
@@ -86,6 +86,20 @@ jobs:
           reports: artifacts/test-results/**/coverage.cobertura.xml
           targetdir: artifacts/coverage-report
           reporttypes: HtmlInline;MarkdownSummaryGithub;Cobertura
+
+      - name: Enforce coverage threshold
+        if: matrix.os == 'ubuntu-latest'
+        shell: pwsh
+        run: |
+          [xml]$coverage = Get-Content -Path artifacts/coverage-report/Cobertura.xml
+          $lineRate = [double]$coverage.coverage.'line-rate'
+          $lineCoverage = [math]::Round($lineRate * 100, 2)
+
+          if ($lineCoverage -lt 80) {
+            throw "Line coverage is $lineCoverage%; required minimum is 80%."
+          }
+
+          Write-Host "Line coverage is $lineCoverage%; required minimum is 80%."
 
       - name: Publish coverage summary
         if: matrix.os == 'ubuntu-latest'

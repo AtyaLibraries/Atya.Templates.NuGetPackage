@@ -1,21 +1,21 @@
-# __PACKAGE_NAME__
+# Atya.Templates.NuGetPackage
 
 __PACKAGE_DESCRIPTION__
 
 | | |
 | --- | --- |
 | Repository | [__REPOSITORY_URL__](__REPOSITORY_URL__) |
-| NuGet | `__PACKAGE_NAME__` |
+| NuGet | `Atya.Templates.NuGetPackage` |
 | License | MIT |
 
 ## Layout
 
 ```text
 .
-|-- src/__PACKAGE_NAME__/                          # The shipped library
-|-- tests/__PACKAGE_NAME__.UnitTests/              # Starter unit test project
-|-- samples/__PACKAGE_NAME__.Samples.Console/      # Starter sample app
-|-- benchmarks/__PACKAGE_NAME__.Benchmarks/        # Optional BenchmarkDotNet project
+|-- src/Atya.Templates.NuGetPackage/                      # The shipped library
+|-- tests/Atya.Templates.NuGetPackage.UnitTests/          # Starter unit test project
+|-- samples/Atya.Templates.NuGetPackage.Samples.Console/  # Starter sample app
+|-- benchmarks/Atya.Templates.NuGetPackage.Benchmarks/    # Optional BenchmarkDotNet project
 |-- .github/                                       # Optional CI/release config
 |-- CHANGELOG.md                                   # Release history
 |-- SECURITY.md                                    # Vulnerability reporting
@@ -37,18 +37,24 @@ package-specific content before shipping the package.
 After creating the repository and pushing `development` and `master`, run:
 
 ```powershell
-./bootstrap.ps1 -RepoOwner __GITHUB_OWNER__ -RepoName __PACKAGE_NAME__
+./bootstrap.ps1 -RepoOwner __GITHUB_OWNER__ -RepoName Atya.Templates.NuGetPackage
 ```
 
 Pass `-NugetApiKey` to set the `NUGET_API_KEY` GitHub secret during setup.
 
 ## Build, test, pack
 
+The package currently targets `net10.0`. CI restores, audits vulnerable
+packages, checks formatting, builds, tests with coverage, enforces 80% line
+coverage, packs with package validation, runs CodeQL, and publishes release
+artifacts with an SBOM and build provenance attestation.
+
 ```bash
 dotnet restore
+dotnet format --verify-no-changes
 dotnet build --configuration Release --no-restore
 dotnet test --configuration Release --no-build
-dotnet pack ./src/__PACKAGE_NAME__/__PACKAGE_NAME__.csproj --configuration Release --no-build --output artifacts/packages
+dotnet pack ./src/Atya.Templates.NuGetPackage/Atya.Templates.NuGetPackage.csproj --configuration Release --no-build --output artifacts/packages -p:EnablePackageValidation=true
 ```
 
 Artifacts land in `artifacts/packages/`.
