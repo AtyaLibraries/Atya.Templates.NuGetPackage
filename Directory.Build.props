@@ -35,7 +35,7 @@
     <Copyright>Copyright (c) 2026 Atya</Copyright>
     <Description>A reusable .NET package from Atya.</Description>
     <PackageTags>dotnet;atya</PackageTags>
-    <RepositoryUrl>https://github.com/AtyaLibraries/Atya.PackageTemplate</RepositoryUrl>
+    <RepositoryUrl>https://github.com/AtyaLibraries/atya-nuget</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

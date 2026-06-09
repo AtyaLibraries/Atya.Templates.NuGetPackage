@@ -24,9 +24,9 @@ env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   NUGET_XMLDOC_MODE: skip
-  SOLUTION_FILE: .\Atya.PackageTemplate.sln
-  TEST_PROJECT: .\tests\Atya.PackageTemplate.UnitTests\Atya.PackageTemplate.UnitTests.csproj
-  PACKAGE_PROJECT: .\src\Atya.PackageTemplate\Atya.PackageTemplate.csproj
+  SOLUTION_FILE: .\Atya.Templates.NuGetPackage.sln
+  TEST_PROJECT: .\tests\Atya.Templates.NuGetPackage.UnitTests\Atya.Templates.NuGetPackage.UnitTests.csproj
+  PACKAGE_PROJECT: .\src\Atya.Templates.NuGetPackage\Atya.Templates.NuGetPackage.csproj
 
 jobs:
   publish:

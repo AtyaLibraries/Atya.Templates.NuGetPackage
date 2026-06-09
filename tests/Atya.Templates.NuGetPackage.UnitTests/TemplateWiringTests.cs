@@ -1,4 +1,4 @@
-namespace Atya.PackageTemplate.UnitTests;
+namespace Atya.Templates.NuGetPackage.UnitTests;
 
 public sealed class TemplateWiringTests
 {

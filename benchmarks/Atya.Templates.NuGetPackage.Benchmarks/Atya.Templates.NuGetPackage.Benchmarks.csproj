@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Atya.PackageTemplate\Atya.PackageTemplate.csproj">
+    <ProjectReference Include="..\..\src\Atya.Templates.NuGetPackage\Atya.Templates.NuGetPackage.csproj">
       <AdditionalProperties>Configuration=Release</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>

@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Atya.PackageTemplate</AssemblyName>
-    <PackageId>Atya.PackageTemplate</PackageId>
-    <RootNamespace>Atya.PackageTemplate</RootNamespace>
+    <AssemblyName>Atya.Templates.NuGetPackage</AssemblyName>
+    <PackageId>Atya.Templates.NuGetPackage</PackageId>
+    <RootNamespace>Atya.Templates.NuGetPackage</RootNamespace>
     <IsPackable>true</IsPackable>
 
     <!-- MinVer derives the version from git tags (e.g. tag `v1.2.3` -> 1.2.3). -->

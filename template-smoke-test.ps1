@@ -44,7 +44,7 @@ try {
     Write-Host "`n[3/5] Verifying no unresolved template placeholders remain..." -ForegroundColor Yellow
     $placeholderMatches = Get-ChildItem -Path $generatedRoot -Recurse -File |
         Where-Object { $_.FullName -notmatch '\\(bin|obj|artifacts)\\' } |
-        Select-String -Pattern '__[A-Z_]+__'
+        Select-String -Pattern '__[A-Z_]+__|Atya\.Templates\.NuGetPackage|atya-nuget'
 
     if ($placeholderMatches) {
         $details = $placeholderMatches | ForEach-Object { "$($_.Path):$($_.LineNumber):$($_.Line.Trim())" }

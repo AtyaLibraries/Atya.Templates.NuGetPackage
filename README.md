@@ -1,21 +1,21 @@
-# Atya.PackageTemplate
+# Atya.Templates.NuGetPackage
 
 A reusable .NET package from Atya.
 
 | | |
 | --- | --- |
-| Repository | [https://github.com/AtyaLibraries/Atya.PackageTemplate](https://github.com/AtyaLibraries/Atya.PackageTemplate) |
-| NuGet | `Atya.PackageTemplate` |
+| Repository | [https://github.com/AtyaLibraries/atya-nuget](https://github.com/AtyaLibraries/atya-nuget) |
+| NuGet | `Atya.Templates.NuGetPackage` |
 | License | MIT |
 
 ## Layout
 
 ```text
 .
-|-- src/Atya.PackageTemplate/                      # The shipped library
-|-- tests/Atya.PackageTemplate.UnitTests/          # Starter unit test project
-|-- samples/Atya.PackageTemplate.Samples.Console/  # Starter sample app
-|-- benchmarks/Atya.PackageTemplate.Benchmarks/    # BenchmarkDotNet project
+|-- src/Atya.Templates.NuGetPackage/                      # The shipped library
+|-- tests/Atya.Templates.NuGetPackage.UnitTests/          # Starter unit test project
+|-- samples/Atya.Templates.NuGetPackage.Samples.Console/  # Starter sample app
+|-- benchmarks/Atya.Templates.NuGetPackage.Benchmarks/    # BenchmarkDotNet project
 `-- .github/                                       # CI/release configuration
 ```
 
@@ -39,7 +39,7 @@ dotnet restore
 dotnet format --verify-no-changes
 dotnet build --configuration Release --no-restore
 dotnet test --configuration Release --no-build
-dotnet pack ./src/Atya.PackageTemplate/Atya.PackageTemplate.csproj --configuration Release --no-build --output artifacts/packages -p:EnablePackageValidation=true
+dotnet pack ./src/Atya.Templates.NuGetPackage/Atya.Templates.NuGetPackage.csproj --configuration Release --no-build --output artifacts/packages -p:EnablePackageValidation=true
 ```
 
 Artifacts land in `artifacts/packages/`.

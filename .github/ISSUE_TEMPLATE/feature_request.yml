@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an addition or change to Atya.PackageTemplate.
+description: Suggest an addition or change to Atya.Templates.NuGetPackage.
 labels: [enhancement, triage]
 body:
   - type: textarea
