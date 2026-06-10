@@ -101,6 +101,11 @@ function Invoke-SmokeScenario {
         throw "Expected generated files are missing:`n$($missingFiles -join "`n")"
     }
 
+    $staleLocks = @(Get-ChildItem -Path $outputPath -Recurse -Filter "packages.lock.json" -File)
+    if ($staleLocks.Count -ne 0) {
+        throw "Generated output contains stale package lock files before restore."
+    }
+
     $benchmarkProject = Join-Path $outputPath "benchmarks/$generatedName.Benchmarks/$generatedName.Benchmarks.csproj"
     if ($Scenario.ExpectBenchmarks -and -not (Test-Path $benchmarkProject)) {
         throw "Expected benchmark project is missing."
@@ -152,7 +157,21 @@ function Invoke-SmokeScenario {
             git -c commit.gpgsign=false commit -m "chore: initialize smoke-test repository"
         }
         Invoke-NativeCommand -Description "$scenarioName restore" -Command {
-            dotnet restore "./$generatedName.sln" --verbosity minimal -p:UseLockFiles=true
+            dotnet restore "./$generatedName.sln" --verbosity minimal --use-lock-file
+        }
+
+        $projectDirectories = Get-ChildItem -Path . -Recurse -Filter "*.csproj" -File |
+            ForEach-Object { $_.Directory.FullName }
+        $missingLocks = $projectDirectories | Where-Object {
+            -not (Test-Path -LiteralPath (Join-Path $_ "packages.lock.json"))
+        }
+
+        if ($missingLocks) {
+            throw "Restore did not create a lock file for every project:`n$($missingLocks -join "`n")"
+        }
+
+        Invoke-NativeCommand -Description "$scenarioName locked-mode restore" -Command {
+            dotnet restore "./$generatedName.sln" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
         }
 
         $packageLock = Get-Content -Path "./src/$generatedName/packages.lock.json" -Raw

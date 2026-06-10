@@ -40,7 +40,7 @@ All generated projects target `net10.0`.
 ## Development
 
 ```bash
-dotnet restore
+dotnet restore --use-lock-file
 dotnet format --verify-no-changes
 dotnet build --configuration Release --no-restore
 dotnet test --configuration Release --no-build
@@ -50,6 +50,9 @@ dotnet pack ./src/Atya.Templates.NuGetPackage/Atya.Templates.NuGetPackage.csproj
   --output artifacts/packages \
   -p:EnablePackageValidation=true
 ```
+
+The first restore creates fresh `packages.lock.json` files for every generated
+project. CI then restores in locked mode.
 
 CI audits dependencies, restores in locked mode, verifies formatting, builds on
 Linux and Windows, publishes TRX results, enforces 80% line coverage, validates
