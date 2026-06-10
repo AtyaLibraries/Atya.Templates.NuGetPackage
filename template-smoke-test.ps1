@@ -68,8 +68,7 @@ function Invoke-SmokeScenario {
         "--output", $outputPath,
         "--authors", "Smoke Tester",
         "--company", "SmokeCo",
-        "--github-owner", "AtyaLibraries",
-        "--skip-restore"
+        "--github-owner", "AtyaLibraries"
     ) + $Scenario.Arguments
 
     Invoke-NativeCommand -Description "$scenarioName template generation" -Command {
@@ -99,11 +98,6 @@ function Invoke-SmokeScenario {
 
     if ($missingFiles) {
         throw "Expected generated files are missing:`n$($missingFiles -join "`n")"
-    }
-
-    $staleLocks = @(Get-ChildItem -Path $outputPath -Recurse -Filter "packages.lock.json" -File)
-    if ($staleLocks.Count -ne 0) {
-        throw "Generated output contains stale package lock files before restore."
     }
 
     $benchmarkProject = Join-Path $outputPath "benchmarks/$generatedName.Benchmarks/$generatedName.Benchmarks.csproj"
@@ -156,10 +150,6 @@ function Invoke-SmokeScenario {
             git add .
             git -c commit.gpgsign=false commit -m "chore: initialize smoke-test repository"
         }
-        Invoke-NativeCommand -Description "$scenarioName restore" -Command {
-            dotnet restore "./$generatedName.sln" --verbosity minimal --use-lock-file
-        }
-
         $projectDirectories = Get-ChildItem -Path . -Recurse -Filter "*.csproj" -File |
             ForEach-Object { $_.Directory.FullName }
         $missingLocks = $projectDirectories | Where-Object {
@@ -167,7 +157,7 @@ function Invoke-SmokeScenario {
         }
 
         if ($missingLocks) {
-            throw "Restore did not create a lock file for every project:`n$($missingLocks -join "`n")"
+            throw "The post-generation restore did not create a lock file for every project:`n$($missingLocks -join "`n")"
         }
 
         Invoke-NativeCommand -Description "$scenarioName locked-mode restore" -Command {

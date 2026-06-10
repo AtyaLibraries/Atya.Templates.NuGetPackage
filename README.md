@@ -40,7 +40,7 @@ All generated projects target `net10.0`.
 ## Development
 
 ```bash
-dotnet restore --use-lock-file
+dotnet restore
 dotnet format --verify-no-changes
 dotnet build --configuration Release --no-restore
 dotnet test --configuration Release --no-build
