@@ -210,6 +210,7 @@ jobs:
           if-no-files-found: error
 
       - name: Attest package provenance
+        continue-on-error: ${{ github.event.repository.visibility != 'public' }}
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32  # v4.1.0
         with:
           subject-path: artifacts/packages/*.nupkg
