@@ -168,25 +168,6 @@
         "defaultValue": ""
       }
     },
-    "framework": {
-      "type": "parameter",
-      "datatype": "choice",
-      "displayName": "Target framework",
-      "description": "Target framework used by source, tests, and samples.",
-      "defaultValue": "net10.0",
-      "replaces": "net10.0",
-      "choices": [
-        { "choice": "net10.0", "description": "Target .NET 10." }
-      ]
-    },
-    "multiTarget": {
-      "type": "parameter",
-      "datatype": "bool",
-      "displayName": "Target all supported .NET versions",
-      "description": "Targets net8.0, net9.0, and net10.0 instead of the single framework selection.",
-      "defaultValue": "false",
-      "replaces": "__MULTI_TARGET__"
-    },
     "includeBenchmarks": {
       "type": "parameter",
       "datatype": "bool",

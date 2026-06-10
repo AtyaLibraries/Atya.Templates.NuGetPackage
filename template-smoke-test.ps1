@@ -4,13 +4,10 @@
   generated repositories can restore, build, test, and pack.
 .EXAMPLE
   ./template-smoke-test.ps1
-  ./template-smoke-test.ps1 -Framework net10.0 -KeepOutput
+  ./template-smoke-test.ps1 -KeepOutput
 #>
 [CmdletBinding()]
 param(
-    [ValidateSet("net10.0")]
-    [string]$Framework = "net10.0",
-
     [string]$PackageName = "Atya.SmokeTest.Pkg",
 
     [switch]$KeepOutput
@@ -44,7 +41,7 @@ function Assert-NoPlaceholders {
 
     $placeholderMatches = Get-ChildItem -Path $Path -Recurse -File |
         Where-Object { $_.FullName -notmatch '\\(bin|obj|artifacts)\\' } |
-        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__GITHUB_OWNER__|__REPOSITORY_URL__|__PACKAGE_MARKER_NAME__|__INCLUDE_ATYA_GUARDS__|__INCLUDE_ATYA_GOVERNANCE__|__MULTI_TARGET__|Atya\.Templates\.NuGetPackage'
+        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__GITHUB_OWNER__|__REPOSITORY_URL__|__PACKAGE_MARKER_NAME__|__INCLUDE_ATYA_GUARDS__|__INCLUDE_ATYA_GOVERNANCE__|Atya\.Templates\.NuGetPackage'
 
     if ($placeholderMatches) {
         $details = $placeholderMatches | ForEach-Object { "$($_.Path):$($_.LineNumber):$($_.Line.Trim())" }
@@ -69,7 +66,6 @@ function Invoke-SmokeScenario {
         "new", "atya-nuget",
         "--name", $generatedName,
         "--output", $outputPath,
-        "--framework", $Framework,
         "--authors", "Smoke Tester",
         "--company", "SmokeCo",
         "--github-owner", "AtyaLibraries",
@@ -133,18 +129,16 @@ function Invoke-SmokeScenario {
     }
 
     [xml]$buildProps = Get-Content -Path (Join-Path $outputPath "Directory.Build.props")
+    $targetFramework = $buildProps.SelectSingleNode("/Project/PropertyGroup/TargetFramework").InnerText.Trim()
+    if ($targetFramework -ne "net10.0") {
+        throw "Expected TargetFramework net10.0, found '$targetFramework'."
+    }
+
     $repositoryUrl = $buildProps.SelectSingleNode("/Project/PropertyGroup/RepositoryUrl").InnerText.Trim()
     $expectedRepositoryUrl = "https://github.com/AtyaLibraries/$generatedName"
 
     if ($repositoryUrl -ne $expectedRepositoryUrl) {
         throw "Expected RepositoryUrl '$expectedRepositoryUrl', found '$repositoryUrl'."
-    }
-
-    if ($Scenario.ExpectMultiTarget) {
-        $targetFrameworks = $buildProps.SelectSingleNode("/Project/PropertyGroup/TargetFrameworks")
-        if (-not $targetFrameworks -or $targetFrameworks.InnerText.Trim() -ne "net8.0;net9.0;net10.0") {
-            throw "Expected TargetFrameworks net8.0;net9.0;net10.0 for multiTarget=true."
-        }
     }
 
     Push-Location $outputPath
@@ -199,28 +193,18 @@ $scenarios = @(
         Name = "Baseline"
         Arguments = @()
         ExpectBenchmarks = $true
-        ExpectMultiTarget = $false
         ExpectNoAtyaGuards = $true
     },
     @{
         Name = "NoBenchmarks"
         Arguments = @("--include-benchmarks", "false")
         ExpectBenchmarks = $false
-        ExpectMultiTarget = $false
-        ExpectNoAtyaGuards = $true
-    },
-    @{
-        Name = "MultiTarget"
-        Arguments = @("--multi-target", "true")
-        ExpectBenchmarks = $true
-        ExpectMultiTarget = $true
         ExpectNoAtyaGuards = $true
     },
     @{
         Name = "NoAtyaGuards"
         Arguments = @("--include-atya-guards", "false")
         ExpectBenchmarks = $true
-        ExpectMultiTarget = $false
         ExpectNoAtyaGuards = $true
     }
 )

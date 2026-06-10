@@ -26,8 +26,6 @@ __PACKAGE_DESCRIPTION__
 
 | Symbol | Default | Result |
 | --- | --- | --- |
-| `framework` | `net10.0` | Single target framework. |
-| `multiTarget` | `false` | Uses the supported multi-target matrix below. |
 | `includeBenchmarks` | `true` | Includes the benchmark project. |
 | `includeGitHub` | `true` | Includes `.github/` and `bootstrap.ps1`. |
 | `includeAtyaGuards` | `false` | Adds `Atya.Foundation.Guards` and its wiring test. |
@@ -37,14 +35,7 @@ With `includeAtyaGovernance=false`, analyzer coverage comes from
 `Microsoft.CodeAnalysis.NetAnalyzers`, `StyleCop.Analyzers`, and
 `Microsoft.VisualStudio.Threading.Analyzers`.
 
-## Target frameworks
-
-| Mode | Frameworks |
-| --- | --- |
-| Default | `net10.0` |
-| `multiTarget=true` | `net8.0;net9.0;net10.0` |
-
-All projects inherit the target selection from `Directory.Build.props`.
+All generated projects target `net10.0`.
 
 ## Development
 
