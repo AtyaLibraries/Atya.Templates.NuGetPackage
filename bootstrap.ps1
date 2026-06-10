@@ -22,29 +22,63 @@ Write-Host "Configuring $repository..." -ForegroundColor Cyan
 
 gh repo edit $repository --default-branch development
 
-$branchProtection = @{
-    required_status_checks = @{
-        strict = $true
-        contexts = @(
-            "build-ubuntu-latest",
-            "build-windows-latest"
-        )
+$rulesetName = "Protected branches"
+$ruleset = @{
+    name = $rulesetName
+    target = "branch"
+    enforcement = "active"
+    bypass_actors = @()
+    conditions = @{
+        ref_name = @{
+            include = @(
+                "refs/heads/master",
+                "refs/heads/development"
+            )
+            exclude = @()
+        }
     }
-    enforce_admins = $false
-    required_pull_request_reviews = @{
-        required_approving_review_count = 1
-    }
-    restrictions = $null
-    required_linear_history = $true
-    allow_force_pushes = $false
-    allow_deletions = $false
+    rules = @(
+        @{ type = "deletion" },
+        @{ type = "non_fast_forward" },
+        @{ type = "required_linear_history" },
+        @{ type = "required_signatures" },
+        @{
+            type = "pull_request"
+            parameters = @{
+                allowed_merge_methods = @("squash", "rebase")
+                dismiss_stale_reviews_on_push = $true
+                require_code_owner_review = $true
+                require_last_push_approval = $true
+                required_approving_review_count = 1
+                required_review_thread_resolution = $true
+            }
+        },
+        @{
+            type = "required_status_checks"
+            parameters = @{
+                required_status_checks = @(
+                    @{ context = "build-ubuntu-latest" },
+                    @{ context = "build-windows-latest" }
+                )
+                strict_required_status_checks_policy = $true
+            }
+        }
+    )
 }
 
-foreach ($branch in @("master", "development")) {
-    Write-Host "Applying branch protection to $branch..." -ForegroundColor Yellow
-    $branchProtection |
-        ConvertTo-Json -Depth 10 |
-        gh api -X PUT "repos/$repository/branches/$branch/protection" --input -
+Write-Host "Applying repository ruleset to master and development..." -ForegroundColor Yellow
+$existingRuleset = @(
+    gh api "repos/$repository/rulesets?includes_parents=false" |
+        ConvertFrom-Json |
+        Where-Object { $_.name -eq $rulesetName }
+) | Select-Object -First 1
+
+$rulesetJson = $ruleset | ConvertTo-Json -Depth 10
+if ($existingRuleset) {
+    $rulesetJson | gh api -X PUT "repos/$repository/rulesets/$($existingRuleset.id)" --input -
+}
+else {
+    $rulesetJson | gh api -X POST "repos/$repository/rulesets" --input -
 }
 
 if (-not [string]::IsNullOrWhiteSpace($NugetApiKey)) {
@@ -72,6 +106,5 @@ Write-Host ""
 Write-Host "Next steps:" -ForegroundColor Green
 Write-Host "  1. Confirm CI is green on development."
 Write-Host "  2. Open and merge a PR from development to master."
-Write-Host "  3. Tag v1.0.0 to trigger the first stable publish:"
-Write-Host "     git tag v1.0.0"
-Write-Host "     git push origin v1.0.0"
+Write-Host "  3. The merge triggers the first stable publish, or run Publish NuGet"
+Write-Host "     manually with an explicit stable version."

@@ -8,8 +8,11 @@
     "githubOwner":       { "longName": "github-owner" },
     "repo":              { "longName": "repository",         "shortName": "r" },
     "framework":         { "longName": "framework",          "shortName": "f" },
+    "multiTarget":       { "longName": "multi-target" },
     "includeBenchmarks": { "longName": "include-benchmarks" },
     "includeGitHub":     { "longName": "include-github" },
+    "includeAtyaGuards": { "longName": "include-atya-guards" },
+    "includeAtyaGovernance": { "longName": "include-atya-governance" },
     "skipRestore":       { "longName": "skip-restore" }
   }
 }

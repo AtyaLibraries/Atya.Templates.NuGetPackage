@@ -36,6 +36,7 @@
         "Atya.Templates.NuGetPackage.csproj",
         "PACKAGE_README.md",
         "icon.png",
+        "packages.lock.json",
         ".github/workflows/test-template.yml",
         ".github/workflows/publish-template.yml",
         "Atya.Templates.NuGetPackage.sln",
@@ -59,7 +60,14 @@
         {
           "condition": "(!includeGitHub)",
           "exclude": [
-            ".github/**"
+            ".github/**",
+            "bootstrap.ps1"
+          ]
+        },
+        {
+          "condition": "(!includeAtyaGuards)",
+          "exclude": [
+            "tests/Atya.Templates.NuGetPackage.UnitTests/GuardWiringTests.cs"
           ]
         }
       ]
@@ -171,6 +179,14 @@
         { "choice": "net10.0", "description": "Target .NET 10." }
       ]
     },
+    "multiTarget": {
+      "type": "parameter",
+      "datatype": "bool",
+      "displayName": "Target all supported .NET versions",
+      "description": "Targets net8.0, net9.0, and net10.0 instead of the single framework selection.",
+      "defaultValue": "false",
+      "replaces": "__MULTI_TARGET__"
+    },
     "includeBenchmarks": {
       "type": "parameter",
       "datatype": "bool",
@@ -184,6 +200,22 @@
       "displayName": "Include GitHub configuration",
       "description": "Adds .github/ folder with CI/release workflows, Dependabot, and issue templates.",
       "defaultValue": "true"
+    },
+    "includeAtyaGuards": {
+      "type": "parameter",
+      "datatype": "bool",
+      "displayName": "Include Atya guards",
+      "description": "Adds the Atya.Foundation.Guards runtime dependency and its wiring test.",
+      "defaultValue": "false",
+      "replaces": "__INCLUDE_ATYA_GUARDS__"
+    },
+    "includeAtyaGovernance": {
+      "type": "parameter",
+      "datatype": "bool",
+      "displayName": "Include Atya governance packages",
+      "description": "Uses Atya.Governance.CodeQuality and Atya.Governance.Testing instead of the default analyzer packages.",
+      "defaultValue": "false",
+      "replaces": "__INCLUDE_ATYA_GOVERNANCE__"
     },
     "skipRestore": {
       "type": "parameter",
@@ -265,7 +297,7 @@
         { "text": "Run 'dotnet restore'" }
       ],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
-      "continueOnError": true
+      "continueOnError": false
     }
   ]
 }
