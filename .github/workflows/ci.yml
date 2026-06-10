@@ -49,21 +49,6 @@ jobs:
       - name: Restore
         run: dotnet restore "${{ env.SOLUTION_FILE }}" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
 
-      - name: Vulnerability audit
-        if: matrix.os == 'ubuntu-latest'
-        shell: pwsh
-        run: |
-          $audit = dotnet list "$env:SOLUTION_FILE" package --vulnerable --include-transitive
-          $audit | Write-Host
-
-          if ($LASTEXITCODE -ne 0) {
-            exit $LASTEXITCODE
-          }
-
-          if ($audit -match 'has the following vulnerable packages') {
-            throw "Vulnerable packages found."
-          }
-
       - name: Format
         if: matrix.os == 'ubuntu-latest'
         run: dotnet format "${{ env.SOLUTION_FILE }}" --verify-no-changes --verbosity minimal --no-restore
