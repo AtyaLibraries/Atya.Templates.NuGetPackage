@@ -7,9 +7,10 @@
     "tags":              { "longName": "tags",               "shortName": "t" },
     "githubOwner":       { "longName": "github-owner" },
     "repo":              { "longName": "repository",         "shortName": "r" },
-    "framework":         { "longName": "framework",          "shortName": "f" },
     "includeBenchmarks": { "longName": "include-benchmarks" },
     "includeGitHub":     { "longName": "include-github" },
+    "includeAtyaGuards": { "longName": "include-atya-guards" },
+    "includeAtyaGovernance": { "longName": "include-atya-governance" },
     "skipRestore":       { "longName": "skip-restore" }
   }
 }

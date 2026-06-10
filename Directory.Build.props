@@ -5,7 +5,17 @@
     Per-project overrides belong in the .csproj or a scoped Directory.Build.props.
   -->
 
+  <PropertyGroup Label="Supply chain">
+    <NuGetAudit>true</NuGetAudit>
+    <NuGetAuditMode>all</NuGetAuditMode>
+    <NuGetAuditLevel>low</NuGetAuditLevel>
+    <UseLockFiles Condition="'$(UseLockFiles)' == ''">true</UseLockFiles>
+    <RestorePackagesWithLockFile Condition="'$(UseLockFiles)' == 'true'">true</RestorePackagesWithLockFile>
+  </PropertyGroup>
+
   <PropertyGroup Label="Framework and language" Condition="'$(PackageType)' != 'Template'">
+    <IncludeAtyaGuards Condition="'$(IncludeAtyaGuards)' == ''">__INCLUDE_ATYA_GUARDS__</IncludeAtyaGuards>
+    <IncludeAtyaGovernance Condition="'$(IncludeAtyaGovernance)' == ''">__INCLUDE_ATYA_GOVERNANCE__</IncludeAtyaGovernance>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -24,11 +34,6 @@
     <!-- Strict on shipped code; relaxed on tests/samples so a warning does not block experiments. -->
     <TreatWarningsAsErrors Condition="'$(IsPackable)' == 'true'">true</TreatWarningsAsErrors>
     <NoWarn Condition="'$(IsTemplateSourceRepository)' == 'true'">$(NoWarn);CA1707;SA1300</NoWarn>
-  </PropertyGroup>
-
-  <PropertyGroup Label="Restore" Condition="'$(PackageType)' != 'Template'">
-    <!-- Set UseLockFiles=true to opt into per-project packages.lock.json. In CI, combine with RestoreLockedMode=true for reproducible restores. -->
-    <RestorePackagesWithLockFile Condition="'$(UseLockFiles)' == 'true'">true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <PropertyGroup Label="Packaging defaults" Condition="'$(PackageType)' != 'Template'">
@@ -51,11 +56,13 @@
     <PublishRepositoryUrl Condition="'$(RepositoryHasGitDirectory)' == 'true'">true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <DebugType Condition="'$(IsPackable)' == 'true'">portable</DebugType>
+    <DebugSymbols Condition="'$(IsPackable)' == 'true'">true</DebugSymbols>
   </PropertyGroup>
 
   <PropertyGroup Label="Repository URL guard" Condition="'$(PackageType)' != 'Template'">
-    <!-- The raw template contains __REPOSITORY_URL__; SourceLink should run only after the template is rendered. -->
-    <RepositoryUrlIsConfigured Condition="'$(RepositoryUrl)' != '' And !$(RepositoryUrl.Contains('__REPOSITORY_URL__'))">true</RepositoryUrlIsConfigured>
+    <!-- The raw template contains an unresolved __ token; SourceLink runs only after rendering. -->
+    <RepositoryUrlIsConfigured Condition="'$(RepositoryUrl)' != '' And !$(RepositoryUrl.Contains('__'))">true</RepositoryUrlIsConfigured>
     <RepositoryUrlIsConfigured Condition="'$(RepositoryUrlIsConfigured)' == ''">false</RepositoryUrlIsConfigured>
   </PropertyGroup>
 
@@ -64,5 +71,13 @@
     <!-- <IsTrimmable>true</IsTrimmable> -->
     <!-- <IsAotCompatible>true</IsAotCompatible> -->
   </PropertyGroup>
+
+  <!--#if (!includeAtyaGovernance) -->
+  <ItemGroup Label="Default analyzers" Condition="'$(PackageType)' != 'Template' And '$(IncludeAtyaGovernance)' != 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" PrivateAssets="all" />
+  </ItemGroup>
+  <!--#endif -->
 
 </Project>

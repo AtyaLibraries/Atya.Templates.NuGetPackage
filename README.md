@@ -12,62 +12,75 @@ __PACKAGE_DESCRIPTION__
 
 ```text
 .
-|-- src/Atya.Templates.NuGetPackage/                      # The shipped library
-|-- tests/Atya.Templates.NuGetPackage.UnitTests/          # Starter unit test project
-|-- samples/Atya.Templates.NuGetPackage.Samples.Console/  # Starter sample app
-|-- benchmarks/Atya.Templates.NuGetPackage.Benchmarks/    # Optional BenchmarkDotNet project
-|-- .github/                                       # Optional CI/release config
-|-- CHANGELOG.md                                   # Release history
-|-- SECURITY.md                                    # Vulnerability reporting
-|-- CONTRIBUTING.md                                # Contribution workflow
-|-- bootstrap.ps1                                  # One-time GitHub repository setup
-`-- nuget.config                                   # nuget.org-only package source
+|-- src/Atya.Templates.NuGetPackage/                      # Shipped library
+|-- tests/Atya.Templates.NuGetPackage.UnitTests/          # xUnit tests
+|-- samples/Atya.Templates.NuGetPackage.Samples.Console/  # Sample application
+|-- benchmarks/Atya.Templates.NuGetPackage.Benchmarks/    # Optional benchmarks
+|-- docs/RELEASING.md                              # Release and recovery flow
+|-- .github/                                       # Optional GitHub automation
+|-- bootstrap.ps1                                  # Optional repository setup
+`-- Directory.Packages.props                       # Central package versions
 ```
 
-## Starter Content
+## Template options
 
-The generated library project is intentionally minimal so you can add the real
-package implementation without first removing fake public APIs.
+| Symbol | Default | Result |
+| --- | --- | --- |
+| `includeBenchmarks` | `true` | Includes the benchmark project. |
+| `includeGitHub` | `true` | Includes `.github/` and `bootstrap.ps1`. |
+| `includeAtyaGuards` | `false` | Adds `Atya.Foundation.Guards` and its wiring test. |
+| `includeAtyaGovernance` | `false` | Uses Atya governance analyzer packages. |
 
-Replace the starter tests, sample, benchmarks, and README sections with
-package-specific content before shipping the package.
+With `includeAtyaGovernance=false`, analyzer coverage comes from
+`Microsoft.CodeAnalysis.NetAnalyzers`, `StyleCop.Analyzers`, and
+`Microsoft.VisualStudio.Threading.Analyzers`.
 
-## First-time setup
+All generated projects target `net10.0`.
 
-After creating the repository and pushing `development` and `master`, run:
-
-```powershell
-./bootstrap.ps1 -RepoOwner __GITHUB_OWNER__ -RepoName Atya.Templates.NuGetPackage
-```
-
-Pass `-NugetApiKey` to set the `NUGET_API_KEY` GitHub secret during setup.
-
-## Build, test, pack
-
-The package currently targets `net10.0`. CI restores, audits vulnerable
-packages, checks formatting, builds, tests with coverage, enforces 80% line
-coverage, packs with package validation, runs CodeQL for public repositories
-or when `CODEQL_ENABLED=true`, and publishes release artifacts with an SBOM
-and build provenance attestation.
+## Development
 
 ```bash
 dotnet restore
 dotnet format --verify-no-changes
 dotnet build --configuration Release --no-restore
 dotnet test --configuration Release --no-build
-dotnet pack ./src/Atya.Templates.NuGetPackage/Atya.Templates.NuGetPackage.csproj --configuration Release --no-build --output artifacts/packages -p:EnablePackageValidation=true
+dotnet pack ./src/Atya.Templates.NuGetPackage/Atya.Templates.NuGetPackage.csproj \
+  --configuration Release \
+  --no-build \
+  --output artifacts/packages \
+  -p:EnablePackageValidation=true
 ```
 
-Artifacts land in `artifacts/packages/`.
+The first restore creates fresh `packages.lock.json` files for every generated
+project. CI then restores in locked mode.
 
-## Versioning
+CI audits dependencies, restores in locked mode, verifies formatting, builds on
+Linux and Windows, publishes TRX results, enforces 80% line coverage, validates
+the package, and uploads symbols.
 
-Versions are derived from git tags via [MinVer](https://github.com/adamralph/minver).
-Merges to `master` publish stable NuGet packages through
-`.github/workflows/publish-nuget.yml`, which creates the version tag and GitHub
-Release after a successful publish.
+## GitHub setup
 
-```bash
-# Optional manual workflow version override:
-1.2.0
+When `includeGitHub=true`, push `development` and `master`, authenticate the
+GitHub CLI, and run:
+
+```powershell
+./bootstrap.ps1 -RepoOwner __GITHUB_OWNER__ -RepoName Atya.Templates.NuGetPackage
 ```
+
+The script idempotently creates an active repository ruleset for both branches.
+It applies to administrators, requires pull requests and CODEOWNER review,
+requires signed commits and linear history, blocks force pushes and deletion,
+and requires the Linux and Windows CI checks.
+
+Set these repository values before publishing:
+
+- Secret `NUGET_API_KEY`
+- Secret `NUGET_SIGN_CERT_BASE64`
+- Secret `NUGET_SIGN_CERT_PASSWORD`
+- Variable `REQUIRE_SIGNED_PACKAGES` (defaults to `true`; set `false` only for an explicit unsigned-publishing exception)
+
+## Versioning and releases
+
+MinVer derives package versions from `vMAJOR.MINOR.PATCH` tags. The publish
+workflow supports an explicit stable SemVer input for a controlled manual
+release. See `docs/RELEASING.md` for the complete publish and recovery process.

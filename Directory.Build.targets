@@ -10,6 +10,10 @@
     <Error Condition="'$(Description)' == ''" Text="Description must be set before packing." />
     <Error Condition="'$(Authors)' == ''" Text="Authors must be set before packing." />
     <Error Condition="'$(RepositoryUrl)' == ''" Text="RepositoryUrl must be set before packing (needed by SourceLink)." />
+    <Error Condition="$(Description.Contains('__'))" Text="Description contains an unresolved template placeholder." />
+    <Error Condition="$(Authors.Contains('__'))" Text="Authors contains an unresolved template placeholder." />
+    <Error Condition="$(RepositoryUrl.Contains('__'))" Text="RepositoryUrl contains an unresolved template placeholder." />
+    <Error Condition="$(PackageTags.Contains('__'))" Text="PackageTags contains an unresolved template placeholder." />
   </Target>
 
 </Project>

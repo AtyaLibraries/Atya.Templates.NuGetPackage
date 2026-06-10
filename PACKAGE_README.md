@@ -1,8 +1,9 @@
-TODO: Add a 128x128 icon.png before publishing a polished template package.
+# Atya NuGet Package Template
 
-# Atya.Templates.NuGetPackage
-
-Production-ready .NET 10 NuGet package starter.
+`Atya.Templates.NuGetPackage` scaffolds a production-ready .NET library
+repository with central package management, MinVer, SourceLink, tests, samples,
+optional benchmarks, reproducible restores, package validation, and hardened
+GitHub workflows.
 
 ## Install
 
@@ -10,39 +11,50 @@ Production-ready .NET 10 NuGet package starter.
 dotnet new install Atya.Templates.NuGetPackage
 ```
 
-## Use
+## Create a repository
 
 ```bash
-dotnet new atya-nuget --name Atya.YourPackage
+dotnet new atya-nuget --name Contoso.Example
 ```
 
-You get a ready-to-build package repository with source, tests, samples, optional benchmarks, central package management, GitHub CI, NuGet publishing, Dependabot, and release-note metadata already in place.
+The generated repository targets `net10.0`, includes GitHub automation and benchmarks,
+and has no runtime or analyzer dependency on first-party Atya packages.
 
-## What's Included
+## Template options
 
-- `src/`, `tests/`, `samples/`, and optional `benchmarks/` projects targeting `net10.0`.
-- CI workflow for restore, audit, format, build, test, coverage, and pack.
-- Publish workflow for tagged stable NuGet releases.
-- Dependabot and central package management.
-- `Atya.Foundation.Guards`, `Atya.Governance.CodeQuality`, and `Atya.Governance.Testing` pre-wired.
+| Option | Default | Behavior |
+| --- | --- | --- |
+| `--include-benchmarks` | `true` | Includes the BenchmarkDotNet project and solution wiring. |
+| `--include-github` | `true` | Includes GitHub workflows, issue templates, CODEOWNERS, Dependabot, and `bootstrap.ps1`. |
+| `--include-atya-guards` | `false` | Adds the `Atya.Foundation.Guards` runtime dependency and wiring test. |
+| `--include-atya-governance` | `false` | Uses `Atya.Governance.CodeQuality` and `Atya.Governance.Testing`. |
 
-## Naming Convention
+When Atya governance is disabled, the generated repository uses
+`Microsoft.CodeAnalysis.NetAnalyzers`, `StyleCop.Analyzers`, and
+`Microsoft.VisualStudio.Threading.Analyzers`.
 
-Future Atya templates should follow the same package and short-name shape:
-
-```text
-Atya.Templates.NuGetPackage     -> atya-nuget
-Atya.Templates.ConsoleApp       -> atya-console
-Atya.Templates.WorkerService    -> atya-worker
-Atya.Templates.WebApi           -> atya-webapi
-Atya.Templates.AnalyzerPackage  -> atya-analyzer
-Atya.Templates.SourceGenerator  -> atya-generator
+```bash
+dotnet new atya-nuget \
+  --name Contoso.Example \
+  --include-benchmarks false \
+  --include-atya-guards false \
+  --include-atya-governance false
 ```
 
-## First-Time Setup
+## Generated safeguards
 
-After creating and pushing the generated repository, run `./bootstrap.ps1` to apply GitHub repository defaults, branch protection, labels, and the optional `NUGET_API_KEY` secret.
+- NuGet auditing at `low` severity or higher and lock-file enforcement in CI.
+- Formatting, build, xUnit tests, TRX reporting, and an 80% line coverage gate.
+- Package validation, symbols, SourceLink, SBOM generation, and provenance attestation.
+- Signed publishing by default when GitHub publishing is enabled.
+- Rulesets-based protection for `development` and `master`.
 
-## License
+The template includes a neutral package icon. Replace
+`src/<PackageName>/icon.png` with the final 128x128 package artwork before the
+first public release.
 
-MIT. See the [template repository](https://github.com/AtyaLibraries/Atya.Templates.NuGetPackage).
+## Versioning
+
+MinVer derives versions from `vMAJOR.MINOR.PATCH` tags. Generated repositories
+also support an explicit stable SemVer override through the Publish NuGet
+workflow dispatch input.
