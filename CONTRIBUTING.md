@@ -5,11 +5,14 @@
 Install the SDK version from `global.json`, clone the repository, and run:
 
 ```bash
-dotnet restore
+dotnet restore --use-lock-file
 dotnet format --verify-no-changes
 dotnet build --configuration Release --no-restore
 dotnet test --configuration Release --no-build
 ```
+
+The first restore creates fresh `packages.lock.json` files for every project.
+Commit those files so local and CI restores resolve the same dependency graph.
 
 Run benchmarks only from a Release build:
 

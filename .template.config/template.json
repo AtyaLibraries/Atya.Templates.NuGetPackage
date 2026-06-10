@@ -37,6 +37,7 @@
         "PACKAGE_README.md",
         "icon.png",
         "packages.lock.json",
+        "**/packages.lock.json",
         ".github/workflows/test-template.yml",
         ".github/workflows/publish-template.yml",
         "Atya.Templates.NuGetPackage.sln",
@@ -168,25 +169,6 @@
         "defaultValue": ""
       }
     },
-    "framework": {
-      "type": "parameter",
-      "datatype": "choice",
-      "displayName": "Target framework",
-      "description": "Target framework used by source, tests, and samples.",
-      "defaultValue": "net10.0",
-      "replaces": "net10.0",
-      "choices": [
-        { "choice": "net10.0", "description": "Target .NET 10." }
-      ]
-    },
-    "multiTarget": {
-      "type": "parameter",
-      "datatype": "bool",
-      "displayName": "Target all supported .NET versions",
-      "description": "Targets net8.0, net9.0, and net10.0 instead of the single framework selection.",
-      "defaultValue": "false",
-      "replaces": "__MULTI_TARGET__"
-    },
     "includeBenchmarks": {
       "type": "parameter",
       "datatype": "bool",
@@ -294,7 +276,7 @@
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages",
       "manualInstructions": [
-        { "text": "Run 'dotnet restore'" }
+        { "text": "Run 'dotnet restore --use-lock-file' to restore packages and create fresh lock files." }
       ],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
       "continueOnError": false

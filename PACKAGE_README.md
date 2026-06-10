@@ -17,15 +17,13 @@ dotnet new install Atya.Templates.NuGetPackage
 dotnet new atya-nuget --name Contoso.Example
 ```
 
-The default output targets `net10.0`, includes GitHub automation and benchmarks,
+The generated repository targets `net10.0`, includes GitHub automation and benchmarks,
 and has no runtime or analyzer dependency on first-party Atya packages.
 
 ## Template options
 
 | Option | Default | Behavior |
 | --- | --- | --- |
-| `--framework` | `net10.0` | Selects the target when `--multi-target` is false. |
-| `--multi-target` | `false` | Targets `net8.0`, `net9.0`, and `net10.0`. |
 | `--include-benchmarks` | `true` | Includes the BenchmarkDotNet project and solution wiring. |
 | `--include-github` | `true` | Includes GitHub workflows, issue templates, CODEOWNERS, Dependabot, and `bootstrap.ps1`. |
 | `--include-atya-guards` | `false` | Adds the `Atya.Foundation.Guards` runtime dependency and wiring test. |
@@ -38,7 +36,6 @@ When Atya governance is disabled, the generated repository uses
 ```bash
 dotnet new atya-nuget \
   --name Contoso.Example \
-  --multi-target true \
   --include-benchmarks false \
   --include-atya-guards false \
   --include-atya-governance false

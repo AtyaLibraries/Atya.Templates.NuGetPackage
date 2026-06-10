@@ -56,6 +56,7 @@ $ruleset = @{
         @{
             type = "required_status_checks"
             parameters = @{
+                # ci.yml names the matrix job build-${{ matrix.os }}, producing these check contexts.
                 required_status_checks = @(
                     @{ context = "build-ubuntu-latest" },
                     @{ context = "build-windows-latest" }

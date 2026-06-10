@@ -8,8 +8,6 @@
     { "id": "tags",              "name": { "text": "Tags (semicolon-separated)" }, "isVisible": true },
     { "id": "githubOwner",       "name": { "text": "GitHub owner" },         "isVisible": true },
     { "id": "repo",              "name": { "text": "Repository URL" },       "isVisible": true },
-    { "id": "framework",         "name": { "text": "Target framework" },     "isVisible": true },
-    { "id": "multiTarget",       "name": { "text": "Target all supported .NET versions" }, "isVisible": true },
     { "id": "includeBenchmarks", "name": { "text": "Include benchmarks project" }, "isVisible": true },
     { "id": "includeGitHub",     "name": { "text": "Include .github folder" }, "isVisible": true },
     { "id": "includeAtyaGuards", "name": { "text": "Include Atya guards" },   "isVisible": true },

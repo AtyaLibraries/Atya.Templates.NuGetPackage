@@ -27,8 +27,10 @@ env:
 jobs:
   publish:
     permissions:
+      attestations: write
       contents: write
-    runs-on: windows-latest
+      id-token: write
+    runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
@@ -144,12 +146,71 @@ jobs:
             throw "$expectedName does not declare PackageType=Template."
           }
 
+      - name: Generate SBOM
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610  # v0.24.0
+        with:
+          path: .
+          format: cyclonedx-json
+          output-file: artifacts/packages/sbom.cdx.json
+
+      - name: Sign template package
+        env:
+          NUGET_SIGN_CERT_BASE64: ${{ secrets.NUGET_SIGN_CERT_BASE64 }}
+          NUGET_SIGN_CERT_PASSWORD: ${{ secrets.NUGET_SIGN_CERT_PASSWORD }}
+          REQUIRE_SIGNED_PACKAGES: ${{ vars.REQUIRE_SIGNED_PACKAGES || 'true' }}
+        shell: pwsh
+        run: |
+          $packages = @(Get-ChildItem -Path ./artifacts/packages -Filter "*.nupkg")
+          if ($packages.Count -ne 1) {
+            throw "Expected exactly one template package, found $($packages.Count)."
+          }
+
+          $hasSigningSecrets = -not [string]::IsNullOrWhiteSpace($env:NUGET_SIGN_CERT_BASE64) -and
+            -not [string]::IsNullOrWhiteSpace($env:NUGET_SIGN_CERT_PASSWORD)
+
+          if ($hasSigningSecrets) {
+            $certPath = Join-Path $env:RUNNER_TEMP "nuget-signing-cert.pfx"
+
+            try {
+              [System.IO.File]::WriteAllBytes($certPath, [System.Convert]::FromBase64String($env:NUGET_SIGN_CERT_BASE64))
+
+              foreach ($package in $packages) {
+                dotnet nuget sign "$($package.FullName)" `
+                  --certificate-path "$certPath" `
+                  --certificate-password "$env:NUGET_SIGN_CERT_PASSWORD" `
+                  --timestamper http://timestamp.digicert.com `
+                  --overwrite
+
+                if ($LASTEXITCODE -ne 0) {
+                  exit $LASTEXITCODE
+                }
+              }
+            } finally {
+              if (Test-Path -LiteralPath $certPath) {
+                Remove-Item -LiteralPath $certPath -Force
+              }
+            }
+          } else {
+            if ($env:REQUIRE_SIGNED_PACKAGES -eq 'true') {
+              throw "Package signing is required, but NUGET_SIGN_CERT_BASE64 and NUGET_SIGN_CERT_PASSWORD are not both set."
+            }
+
+            Write-Warning "Package signing was explicitly disabled; publishing an unsigned package."
+          }
+
       - name: Upload package
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: template-package-${{ steps.version.outputs.version }}
-          path: artifacts/packages/*.nupkg
+          path: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/sbom.cdx.json
           if-no-files-found: error
+
+      - name: Attest package provenance
+        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32  # v4.1.0
+        with:
+          subject-path: artifacts/packages/*.nupkg
 
       - name: Publish to nuget.org
         env:
@@ -190,4 +251,6 @@ jobs:
           name: v${{ steps.version.outputs.version }}
           generate_release_notes: true
           fail_on_unmatched_files: true
-          files: artifacts/packages/*.nupkg
+          files: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/sbom.cdx.json
