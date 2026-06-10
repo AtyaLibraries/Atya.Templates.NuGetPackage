@@ -276,7 +276,7 @@
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages",
       "manualInstructions": [
-        { "text": "Run 'dotnet restore --use-lock-file' to restore packages and create fresh lock files." }
+        { "text": "Run 'dotnet restore' to restore packages and create fresh lock files." }
       ],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
       "continueOnError": false

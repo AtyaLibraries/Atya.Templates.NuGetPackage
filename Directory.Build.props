@@ -9,8 +9,8 @@
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
     <NuGetAuditLevel>low</NuGetAuditLevel>
-    <UseLockFiles Condition="'$(UseLockFiles)' == '' And '$(CI)' == 'true'">true</UseLockFiles>
-    <RestorePackagesWithLockFile Condition="'$(UseLockFiles)' == 'true' Or Exists('packages.lock.json')">true</RestorePackagesWithLockFile>
+    <UseLockFiles Condition="'$(UseLockFiles)' == ''">true</UseLockFiles>
+    <RestorePackagesWithLockFile Condition="'$(UseLockFiles)' == 'true'">true</RestorePackagesWithLockFile>
   </PropertyGroup>
 
   <PropertyGroup Label="Framework and language" Condition="'$(PackageType)' != 'Template'">
