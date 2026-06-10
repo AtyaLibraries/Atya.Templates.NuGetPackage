@@ -6,7 +6,7 @@
     <ItemGroup Label="Versioning + SourceLink (library-side)">
         <PackageVersion Include="Atya.Governance.CodeQuality" Version="1.0.0" />
         <PackageVersion Include="Atya.Foundation.Guards" Version="1.0.0" />
-        <PackageVersion Include="MinVer" Version="6.0.0" />
+        <PackageVersion Include="MinVer" Version="7.0.0" />
         <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.301" />
         <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.300" />
         <PackageVersion Include="Microsoft.VisualStudio.Threading.Analyzers" Version="17.14.15" />
