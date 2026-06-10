@@ -26,6 +26,9 @@ env:
 jobs:
   build:
     name: build-${{ matrix.os }}
+    permissions:
+      contents: read
+      checks: write
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -34,17 +37,17 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
         with:
           fetch-depth: 0  # MinVer needs full git history
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v5
+        uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2  # v5.3.0
         with:
           global-json-file: global.json
 
       - name: Restore
-        run: dotnet restore "${{ env.SOLUTION_FILE }}" --verbosity minimal
+        run: dotnet restore "${{ env.SOLUTION_FILE }}" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
 
       - name: Vulnerability audit
         if: matrix.os == 'ubuntu-latest'
@@ -73,15 +76,24 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: test-results-${{ matrix.os }}
           path: artifacts/test-results
           if-no-files-found: warn
 
+      - name: Publish test results
+        if: always() && matrix.os == 'ubuntu-latest' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2  # v3.0.0
+        with:
+          name: .NET test results
+          path: artifacts/test-results/**/*.trx
+          reporter: dotnet-trx
+          fail-on-error: true
+
       - name: Generate coverage report
         if: matrix.os == 'ubuntu-latest'
-        uses: danielpalme/ReportGenerator-GitHub-Action@5.5.10
+        uses: danielpalme/ReportGenerator-GitHub-Action@049f7ec958c672fd31d5cc1cb01622dc8d2e23ab  # 5.5.10
         with:
           reports: artifacts/test-results/**/coverage.cobertura.xml
           targetdir: artifacts/coverage-report
@@ -108,7 +120,7 @@ jobs:
 
       - name: Upload coverage report
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: coverage-report
           path: artifacts/coverage-report
@@ -116,11 +128,20 @@ jobs:
 
       - name: Pack
         if: matrix.os == 'ubuntu-latest'
-        run: dotnet pack "${{ env.PACKAGE_PROJECT }}" --configuration Release --no-build --output artifacts/packages --verbosity minimal -p:EnablePackageValidation=true
+        shell: pwsh
+        run: |
+          $packageProject = $env:PACKAGE_PROJECT
+          if (Test-Path ./Atya.Templates.NuGetPackage.csproj) {
+            $packageProject = "./Atya.Templates.NuGetPackage.csproj"
+            dotnet restore "$packageProject" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
+            dotnet pack "$packageProject" --configuration Release --no-restore --output artifacts/packages --verbosity minimal -p:EnablePackageValidation=true
+          } else {
+            dotnet pack "$packageProject" --configuration Release --no-build --output artifacts/packages --verbosity minimal -p:EnablePackageValidation=true
+          }
 
       - name: Upload packages
         if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
           name: packages
           path: |

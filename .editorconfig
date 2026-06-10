@@ -32,6 +32,13 @@ dotnet_diagnostic.IDE0044.severity = warning
 dotnet_diagnostic.IDE0049.severity = warning
 dotnet_diagnostic.IDE0060.severity = suggestion
 dotnet_diagnostic.IDE0079.severity = warning
+dotnet_diagnostic.CA1062.severity = warning
+dotnet_diagnostic.CA2007.severity = none
+dotnet_diagnostic.SA1101.severity = none
+dotnet_diagnostic.SA1200.severity = none
+dotnet_diagnostic.SA1309.severity = none
+dotnet_diagnostic.SA1600.severity = none
+dotnet_diagnostic.SA1633.severity = none
 csharp_indent_labels = one_less_than_current
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
@@ -59,6 +66,9 @@ csharp_style_expression_bodied_properties = true:silent
 
 [*.md]
 trim_trailing_whitespace = false
+
+[tests/**/*.cs]
+dotnet_analyzer_diagnostic.category-xUnit.severity = warning
 
 [*.{cs,vb}]
 #### Naming styles ####
