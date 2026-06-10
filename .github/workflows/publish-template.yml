@@ -107,9 +107,11 @@ jobs:
         run: pwsh ./template-smoke-test.ps1
 
       - name: Restore template package
+        shell: pwsh
         run: dotnet restore "$env:PACKAGE_PROJECT" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
 
       - name: Pack template
+        shell: pwsh
         run: >
           dotnet pack "$env:PACKAGE_PROJECT"
           --configuration Release
