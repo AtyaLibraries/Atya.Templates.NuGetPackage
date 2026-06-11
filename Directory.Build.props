@@ -27,6 +27,10 @@
     <IsTemplateSourceRepository Condition="'$(IsTemplateSourceRepository)' == ''">false</IsTemplateSourceRepository>
     <RepositoryHasGitDirectory Condition="'$(RepositoryHasGitDirectory)' == '' And Exists('$(MSBuildThisFileDirectory).git')">true</RepositoryHasGitDirectory>
     <RepositoryHasGitDirectory Condition="'$(RepositoryHasGitDirectory)' == ''">false</RepositoryHasGitDirectory>
+    <!-- Keep versioning packages in lock files, but defer their Git-dependent targets until git init. -->
+    <MinVerSkip Condition="'$(RepositoryHasGitDirectory)' != 'true'">true</MinVerSkip>
+    <EnableSourceControlManagerQueries Condition="'$(RepositoryHasGitDirectory)' != 'true'">false</EnableSourceControlManagerQueries>
+    <EnableSourceLink Condition="'$(RepositoryHasGitDirectory)' != 'true'">false</EnableSourceLink>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Deterministic>true</Deterministic>
