@@ -86,6 +86,7 @@ function Invoke-SmokeScenario {
         ".github/CODEOWNERS",
         ".github/pull_request_template.md",
         ".github/release.yml",
+        ".github/workflows/delete-merged-branch.yml",
         "nuget.config",
         "src/$generatedName/$generatedName.cs",
         "src/$generatedName/Properties/AssemblyInfo.cs",
