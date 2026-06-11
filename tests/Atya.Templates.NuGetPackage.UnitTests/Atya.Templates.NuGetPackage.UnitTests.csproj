@@ -3,13 +3,7 @@
   <!-- Framework, analyzers, and default test packages are inherited from tests/Directory.Build.props. -->
 
   <ItemGroup>
-    <!--#if (includeAtyaGovernance) -->
-    <PackageReference Include="Atya.Governance.Testing" Condition="'$(IncludeAtyaGovernance)' == 'true'" />
-    <!--#endif -->
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(IncludeAtyaGuards)' != 'true'">
-    <Compile Remove="GuardWiringTests.cs" />
+    <PackageReference Include="Atya.Governance.Testing" />
   </ItemGroup>
 
   <ItemGroup>
