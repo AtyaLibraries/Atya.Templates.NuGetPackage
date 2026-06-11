@@ -28,12 +28,10 @@ __PACKAGE_DESCRIPTION__
 | --- | --- | --- |
 | `includeBenchmarks` | `true` | Includes the benchmark project. |
 | `includeGitHub` | `true` | Includes `.github/` and `bootstrap.ps1`. |
-| `includeAtyaGuards` | `false` | Adds `Atya.Foundation.Guards` and its wiring test. |
-| `includeAtyaGovernance` | `false` | Uses Atya governance analyzer packages. |
 
-With `includeAtyaGovernance=false`, analyzer coverage comes from
-`Microsoft.CodeAnalysis.NetAnalyzers`, `StyleCop.Analyzers`, and
-`Microsoft.VisualStudio.Threading.Analyzers`.
+Every generated repository includes `Atya.Foundation.Guards`,
+`Atya.Governance.CodeQuality`, and `Atya.Governance.Testing`. These packages
+are part of the template baseline and cannot be disabled with template options.
 
 All generated projects target `net10.0`.
 

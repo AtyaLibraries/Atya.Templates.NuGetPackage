@@ -41,7 +41,7 @@ function Assert-NoPlaceholders {
 
     $placeholderMatches = Get-ChildItem -Path $Path -Recurse -File |
         Where-Object { $_.FullName -notmatch '\\(bin|obj|artifacts)\\' } |
-        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__GITHUB_OWNER__|__REPOSITORY_URL__|__PACKAGE_MARKER_NAME__|__INCLUDE_ATYA_GUARDS__|__INCLUDE_ATYA_GOVERNANCE__|Atya\.Templates\.NuGetPackage'
+        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__GITHUB_OWNER__|__REPOSITORY_URL__|__PACKAGE_MARKER_NAME__|Atya\.Templates\.NuGetPackage'
 
     if ($placeholderMatches) {
         $details = $placeholderMatches | ForEach-Object { "$($_.Path):$($_.LineNumber):$($_.Line.Trim())" }
@@ -117,14 +117,29 @@ function Invoke-SmokeScenario {
         throw "Expected PackageId '$generatedName', found '$packageId'."
     }
 
-    if ($Scenario.ExpectNoAtyaGuards) {
-        $guardReference = $packageProject.SelectSingleNode(
-            "/Project/ItemGroup/PackageReference[@Include='Atya.Foundation.Guards']"
-        )
+    $guardReference = $packageProject.SelectSingleNode(
+        "/Project/ItemGroup/PackageReference[@Include='Atya.Foundation.Guards']"
+    )
+    $codeQualityReference = $packageProject.SelectSingleNode(
+        "/Project/ItemGroup/PackageReference[@Include='Atya.Governance.CodeQuality']"
+    )
 
-        if ($guardReference) {
-            throw "Atya.Foundation.Guards was generated when includeAtyaGuards=false."
-        }
+    if (-not $guardReference -or $guardReference.HasAttribute("Condition")) {
+        throw "Atya.Foundation.Guards must be an unconditional package reference."
+    }
+
+    if (-not $codeQualityReference -or $codeQualityReference.HasAttribute("Condition")) {
+        throw "Atya.Governance.CodeQuality must be an unconditional package reference."
+    }
+
+    $testProjectPath = Join-Path $outputPath "tests/$generatedName.UnitTests/$generatedName.UnitTests.csproj"
+    [xml]$testProject = Get-Content -Path $testProjectPath
+    $testingReference = $testProject.SelectSingleNode(
+        "/Project/ItemGroup/PackageReference[@Include='Atya.Governance.Testing']"
+    )
+
+    if (-not $testingReference -or $testingReference.HasAttribute("Condition")) {
+        throw "Atya.Governance.Testing must be an unconditional package reference."
     }
 
     [xml]$buildProps = Get-Content -Path (Join-Path $outputPath "Directory.Build.props")
@@ -180,8 +195,18 @@ function Invoke-SmokeScenario {
         }
 
         $packageLock = Get-Content -Path "./src/$generatedName/packages.lock.json" -Raw
-        if ($packageLock -notmatch '"MinVer"' -or $packageLock -notmatch '"Microsoft.SourceLink.GitHub"') {
-            throw "Generated package lock file is missing MinVer or Microsoft.SourceLink.GitHub."
+        if (
+            $packageLock -notmatch '"Atya.Foundation.Guards"' -or
+            $packageLock -notmatch '"Atya.Governance.CodeQuality"' -or
+            $packageLock -notmatch '"MinVer"' -or
+            $packageLock -notmatch '"Microsoft.SourceLink.GitHub"'
+        ) {
+            throw "Generated package lock file is missing a required library dependency."
+        }
+
+        $testLock = Get-Content -Path "./tests/$generatedName.UnitTests/packages.lock.json" -Raw
+        if ($testLock -notmatch '"Atya.Governance.Testing"') {
+            throw "Generated test lock file is missing Atya.Governance.Testing."
         }
 
         Invoke-NativeCommand -Description "$scenarioName Release build" -Command {
@@ -217,19 +242,11 @@ $scenarios = @(
         Name = "Baseline"
         Arguments = @()
         ExpectBenchmarks = $true
-        ExpectNoAtyaGuards = $true
     },
     @{
         Name = "NoBenchmarks"
         Arguments = @("--include-benchmarks", "false")
         ExpectBenchmarks = $false
-        ExpectNoAtyaGuards = $true
-    },
-    @{
-        Name = "NoAtyaGuards"
-        Arguments = @("--include-atya-guards", "false")
-        ExpectBenchmarks = $true
-        ExpectNoAtyaGuards = $true
     }
 )
 

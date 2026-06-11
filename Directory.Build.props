@@ -14,8 +14,6 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Framework and language" Condition="'$(PackageType)' != 'Template'">
-    <IncludeAtyaGuards Condition="'$(IncludeAtyaGuards)' == ''">__INCLUDE_ATYA_GUARDS__</IncludeAtyaGuards>
-    <IncludeAtyaGovernance Condition="'$(IncludeAtyaGovernance)' == ''">__INCLUDE_ATYA_GOVERNANCE__</IncludeAtyaGovernance>
     <TargetFramework>net10.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
@@ -75,13 +73,5 @@
     <!-- <IsTrimmable>true</IsTrimmable> -->
     <!-- <IsAotCompatible>true</IsAotCompatible> -->
   </PropertyGroup>
-
-  <!--#if (!includeAtyaGovernance) -->
-  <ItemGroup Label="Default analyzers" Condition="'$(PackageType)' != 'Template' And '$(IncludeAtyaGovernance)' != 'true'">
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" />
-    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" PrivateAssets="all" />
-  </ItemGroup>
-  <!--#endif -->
 
 </Project>
