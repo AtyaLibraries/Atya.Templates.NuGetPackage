@@ -142,6 +142,21 @@ function Invoke-SmokeScenario {
 
     Push-Location $outputPath
     try {
+        $preGitBuildOutput = @(
+            dotnet build "./$generatedName.sln" --configuration Release --no-restore --verbosity minimal 2>&1
+        )
+        $preGitBuildExitCode = $LASTEXITCODE
+        $preGitBuildText = $preGitBuildOutput -join [Environment]::NewLine
+        Write-Host $preGitBuildText
+
+        if ($preGitBuildExitCode -ne 0) {
+            throw "$scenarioName pre-Git Release build failed with exit code $preGitBuildExitCode."
+        }
+
+        if ($preGitBuildText -match 'MINVER1001|Unable to locate repository|Source control information is not available') {
+            throw "$scenarioName pre-Git Release build emitted a MinVer or SourceLink repository warning."
+        }
+
         Invoke-NativeCommand -Description "$scenarioName git initialization" -Command {
             git init --initial-branch development
             git config user.name "Template Smoke Test"
