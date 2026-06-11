@@ -20,66 +20,129 @@ catch {
 
 Write-Host "Configuring $repository..." -ForegroundColor Cyan
 
-gh repo edit $repository --default-branch development
+gh api -X PATCH "repos/$repository" `
+    -f default_branch=development `
+    -F allow_squash_merge=true `
+    -F allow_merge_commit=true `
+    -F allow_rebase_merge=false | Out-Null
 
-$rulesetName = "Protected branches"
-$ruleset = @{
-    name = $rulesetName
-    target = "branch"
-    enforcement = "active"
-    bypass_actors = @()
-    conditions = @{
-        ref_name = @{
-            include = @(
-                "refs/heads/master",
-                "refs/heads/development"
-            )
-            exclude = @()
+$requiredStatusChecks = @{
+    # ci.yml names the matrix job build-${{ matrix.os }}, producing these check contexts.
+    required_status_checks = @(
+        @{ context = "build-ubuntu-latest" },
+        @{ context = "build-windows-latest" }
+    )
+    strict_required_status_checks_policy = $true
+}
+
+$masterRequiredStatusChecks = @{
+    required_status_checks = @(
+        @{ context = "build-ubuntu-latest" },
+        @{ context = "build-windows-latest" },
+        @{ context = "release-source" }
+    )
+    strict_required_status_checks_policy = $true
+}
+
+$pullRequestDefaults = @{
+    dismiss_stale_reviews_on_push = $true
+    require_code_owner_review = $false
+    require_last_push_approval = $false
+    required_approving_review_count = 0
+    required_review_thread_resolution = $true
+}
+
+$rulesets = @(
+    @{
+        name = "Protect development"
+        target = "branch"
+        enforcement = "active"
+        bypass_actors = @()
+        conditions = @{
+            ref_name = @{
+                include = @("refs/heads/development")
+                exclude = @()
+            }
+        }
+        rules = @(
+            @{ type = "deletion" },
+            @{ type = "non_fast_forward" },
+            @{ type = "required_linear_history" },
+            @{
+                type = "pull_request"
+                parameters = $pullRequestDefaults + @{
+                    allowed_merge_methods = @("squash")
+                }
+            },
+            @{
+                type = "required_status_checks"
+                parameters = $requiredStatusChecks
+            }
+        )
+    },
+    @{
+        name = "Protect master"
+        target = "branch"
+        enforcement = "active"
+        bypass_actors = @()
+        conditions = @{
+            ref_name = @{
+                include = @("refs/heads/master")
+                exclude = @()
+            }
+        }
+        rules = @(
+            @{ type = "deletion" },
+            @{ type = "non_fast_forward" },
+            @{
+                type = "pull_request"
+                parameters = $pullRequestDefaults + @{
+                    allowed_merge_methods = @("merge")
+                }
+            },
+            @{
+                type = "required_status_checks"
+                parameters = $masterRequiredStatusChecks
+            }
+        )
+    }
+)
+
+Write-Host "Applying repository rulesets to development and master..." -ForegroundColor Yellow
+$existingRulesets = @(
+    gh api "repos/$repository/rulesets?includes_parents=false" |
+        ConvertFrom-Json
+)
+
+$legacyRuleset = $existingRulesets | Where-Object { $_.name -eq "Protected branches" } |
+    Select-Object -First 1
+if ($legacyRuleset) {
+    gh api -X DELETE "repos/$repository/rulesets/$($legacyRuleset.id)"
+}
+
+foreach ($ruleset in $rulesets) {
+    $existingRuleset = $existingRulesets | Where-Object { $_.name -eq $ruleset.name } |
+        Select-Object -First 1
+    $rulesetPath = Join-Path ([System.IO.Path]::GetTempPath()) "$([guid]::NewGuid()).json"
+
+    try {
+        [System.IO.File]::WriteAllText(
+            $rulesetPath,
+            ($ruleset | ConvertTo-Json -Depth 10),
+            [System.Text.UTF8Encoding]::new($false)
+        )
+
+        if ($existingRuleset) {
+            gh api -X PUT "repos/$repository/rulesets/$($existingRuleset.id)" --input $rulesetPath |
+                Out-Null
+        }
+        else {
+            gh api -X POST "repos/$repository/rulesets" --input $rulesetPath | Out-Null
         }
     }
-    rules = @(
-        @{ type = "deletion" },
-        @{ type = "non_fast_forward" },
-        @{ type = "required_linear_history" },
-        @{ type = "required_signatures" },
-        @{
-            type = "pull_request"
-            parameters = @{
-                allowed_merge_methods = @("squash", "rebase")
-                dismiss_stale_reviews_on_push = $true
-                require_code_owner_review = $true
-                require_last_push_approval = $true
-                required_approving_review_count = 1
-                required_review_thread_resolution = $true
-            }
-        },
-        @{
-            type = "required_status_checks"
-            parameters = @{
-                # ci.yml names the matrix job build-${{ matrix.os }}, producing these check contexts.
-                required_status_checks = @(
-                    @{ context = "build-ubuntu-latest" },
-                    @{ context = "build-windows-latest" }
-                )
-                strict_required_status_checks_policy = $true
-            }
-        }
-    )
-}
-
-Write-Host "Applying repository ruleset to master and development..." -ForegroundColor Yellow
-$existingRuleset = @(
-    gh api "repos/$repository/rulesets?includes_parents=false" |
-        ConvertFrom-Json |
-        Where-Object { $_.name -eq $rulesetName }
-) | Select-Object -First 1
-
-$rulesetJson = $ruleset | ConvertTo-Json -Depth 10
-if ($existingRuleset) {
-    $rulesetJson | gh api -X PUT "repos/$repository/rulesets/$($existingRuleset.id)" --input -
-}
-else {
-    $rulesetJson | gh api -X POST "repos/$repository/rulesets" --input -
+    finally {
+        Remove-Item -LiteralPath $rulesetPath -Force -ErrorAction SilentlyContinue
+    }
 }
 
 if (-not [string]::IsNullOrWhiteSpace($NugetApiKey)) {
