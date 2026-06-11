@@ -107,9 +107,11 @@ jobs:
         run: pwsh ./template-smoke-test.ps1
 
       - name: Restore template package
+        shell: pwsh
         run: dotnet restore "$env:PACKAGE_PROJECT" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
 
       - name: Pack template
+        shell: pwsh
         run: >
           dotnet pack "$env:PACKAGE_PROJECT"
           --configuration Release
@@ -208,6 +210,7 @@ jobs:
           if-no-files-found: error
 
       - name: Attest package provenance
+        continue-on-error: ${{ github.event.repository.visibility != 'public' }}
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32  # v4.1.0
         with:
           subject-path: artifacts/packages/*.nupkg
