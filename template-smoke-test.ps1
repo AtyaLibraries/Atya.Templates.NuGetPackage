@@ -51,7 +51,7 @@ function Get-GeneratedFiles {
     $root = (Resolve-Path $Path).Path
 
     return Get-ChildItem -Path $root -Recurse -File -Force |
-        Where-Object { $_.FullName -notmatch '\\(\.git|bin|obj|artifacts)\\' } |
+        Where-Object { $_.FullName -notmatch '[\\/](\.git|bin|obj|artifacts)[\\/]' } |
         ForEach-Object {
             [pscustomobject]@{
                 FullName = $_.FullName
