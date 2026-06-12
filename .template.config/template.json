@@ -9,9 +9,8 @@
   "identity": "Atya.Templates.NuGetPackage",
   "name": "Atya NuGet Package",
   "shortName": "atya-nuget",
-  "sourceName": "Atya.Templates.NuGetPackage",
   "preferNameDirectory": true,
-  "description": "Creates a production-ready .NET package repository with source, tests, samples, benchmarks, central package management, and GitHub CI/release workflows.",
+  "description": "Creates a production-ready Atya.{Area}.{Name} .NET package repository with source, tests, samples, benchmarks, central package management, and GitHub CI/release workflows.",
   "primaryOutputs": [
     {
       "path": "Atya.Templates.NuGetPackage.sln"
@@ -147,7 +146,7 @@
         "symbols": [
           { "type": "const", "value": "https://github.com" },
           { "type": "ref", "value": "githubOwner" },
-          { "type": "ref", "value": "name" }
+          { "type": "ref", "value": "packageId" }
         ],
         "separator": "/",
         "removeEmptyValues": true
@@ -222,6 +221,13 @@
       "replaces": "C4D89AE8-AFEA-4B36-82D9-2BBF683661B0",
       "parameters": { "format": "D" }
     },
+    "packageId": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "NormalizePackageId",
+      "replaces": "Atya.Templates.NuGetPackage",
+      "fileRename": "Atya.Templates.NuGetPackage"
+    },
     "packageMarkerName": {
       "type": "derived",
       "valueSource": "name",
@@ -230,6 +236,23 @@
     }
   },
   "forms": {
+    "StripAtyaPrefix": {
+      "identifier": "replace",
+      "pattern": "^[Aa]tya\\.",
+      "replacement": ""
+    },
+    "PrependAtya": {
+      "identifier": "replace",
+      "pattern": "^",
+      "replacement": "Atya."
+    },
+    "NormalizePackageId": {
+      "identifier": "chain",
+      "steps": [
+        "StripAtyaPrefix",
+        "PrependAtya"
+      ]
+    },
     "PackageNameAfterLastDot": {
       "identifier": "replace",
       "pattern": "^.*\\.(?=[^\\.]+$)",
