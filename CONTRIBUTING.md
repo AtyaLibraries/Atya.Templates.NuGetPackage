@@ -20,12 +20,26 @@ Run benchmarks only from a Release build:
 dotnet run --configuration Release --project ./benchmarks/Atya.Templates.NuGetPackage.Benchmarks/Atya.Templates.NuGetPackage.Benchmarks.csproj
 ```
 
+## Package naming
+
+Packable projects must use `Atya.{Area}.{Name}` with PascalCase segments. The
+template accepts `{Area}.{Name}` or the already-prefixed
+`Atya.{Area}.{Name}` form and normalizes both to the same package ID.
+Additional segments are allowed for companion packages such as `.Analyzers`
+and `.Abstractions`.
+
+The controlled Area vocabulary starts with `Foundation`, `Governance`, and
+`Templates`. New areas require a deliberate naming decision and documentation
+update; do not introduce areas ad hoc.
+
 ## Branching model
 
 Create short-lived branches from `development` and open pull requests back to
-`development`. Release pull requests promote `development` to `master`.
-Protected branches require signed commits, linear history, review, and all
-required CI checks.
+`development`; those pull requests use squash merges. Release pull requests
+must promote `development` to `master` and use merge commits to preserve shared
+history between the long-lived branches. Direct pushes, force pushes, and
+deletion are blocked on both protected branches, and required CI checks must
+pass before merge.
 
 ## Commit style
 
@@ -54,9 +68,11 @@ Use `git commit -s` to add the line automatically.
 ## Release flow
 
 Use Conventional Commits and update `CHANGELOG.md` during normal development.
-Promote `development` to `master` through a reviewed pull request. The merge
-starts the publish workflow, which derives the next version with MinVer and
-creates the tag and GitHub Release after NuGet publishing succeeds.
+Promote `development` to `master` through a pull request after all release
+candidates are accepted and CI is green. The branch-policy check rejects any
+other source branch. The merge starts the publish workflow, which derives the
+next version with MinVer and creates the tag and GitHub Release after NuGet
+publishing succeeds.
 
 For an explicit version, run the `Publish NuGet` workflow manually and provide a
 stable `MAJOR.MINOR.PATCH` value. Follow `docs/RELEASING.md` for signing,

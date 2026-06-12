@@ -14,11 +14,29 @@ dotnet new install Atya.Templates.NuGetPackage
 ## Create a repository
 
 ```bash
-dotnet new atya-nuget --name Contoso.Example
+dotnet new atya-nuget \
+  --name Contoso.Example \
+  --output Atya.Contoso.Example
 ```
 
-The generated repository targets `net10.0`, includes GitHub automation and benchmarks,
-and has no runtime or analyzer dependency on first-party Atya packages.
+The template accepts `{Area}.{Name}` and `Atya.{Area}.{Name}` input forms.
+Both normalize idempotently to `Atya.{Area}.{Name}`. Use two segments after
+the optional prefix for the default package; additional PascalCase segments
+are reserved for companion packages such as `.Analyzers` or `.Abstractions`.
+
+Areas are controlled vocabulary. The initial approved values are `Foundation`,
+`Governance`, and `Templates`; adding another area requires a deliberate
+naming decision rather than an ad-hoc invention. `Contoso.Example` is an
+illustrative input and should be replaced with the approved area and package
+name.
+
+Pass the normalized repository name to `--output` when creating a new
+directory. The .NET template host chooses its automatic output directory from
+the raw `--name` value before template value transforms run.
+
+The generated repository targets `net10.0`, includes GitHub automation and
+benchmarks, and uses the Atya Guards, CodeQuality, and Testing packages by
+default.
 
 ## Template options
 
@@ -26,19 +44,16 @@ and has no runtime or analyzer dependency on first-party Atya packages.
 | --- | --- | --- |
 | `--include-benchmarks` | `true` | Includes the BenchmarkDotNet project and solution wiring. |
 | `--include-github` | `true` | Includes GitHub workflows, issue templates, CODEOWNERS, Dependabot, and `bootstrap.ps1`. |
-| `--include-atya-guards` | `false` | Adds the `Atya.Foundation.Guards` runtime dependency and wiring test. |
-| `--include-atya-governance` | `false` | Uses `Atya.Governance.CodeQuality` and `Atya.Governance.Testing`. |
 
-When Atya governance is disabled, the generated repository uses
-`Microsoft.CodeAnalysis.NetAnalyzers`, `StyleCop.Analyzers`, and
-`Microsoft.VisualStudio.Threading.Analyzers`.
+`Atya.Foundation.Guards`, `Atya.Governance.CodeQuality`, and
+`Atya.Governance.Testing` are unconditional baseline dependencies and are not
+controlled by template options.
 
 ```bash
 dotnet new atya-nuget \
   --name Contoso.Example \
-  --include-benchmarks false \
-  --include-atya-guards false \
-  --include-atya-governance false
+  --output Atya.Contoso.Example \
+  --include-benchmarks false
 ```
 
 ## Generated safeguards
@@ -46,6 +61,8 @@ dotnet new atya-nuget \
 - NuGet auditing at `low` severity or higher and lock-file enforcement in CI.
 - Formatting, build, xUnit tests, TRX reporting, and an 80% line coverage gate.
 - Package validation, symbols, SourceLink, SBOM generation, and provenance attestation.
+- A build and pack guard that rejects nonconforming package IDs unless
+  `SkipPackageNamingValidation=true` is set for an explicit exception.
 - Signed publishing by default when GitHub publishing is enabled.
 - Rulesets-based protection for `development` and `master`.
 

@@ -2,7 +2,8 @@
 
 ## Generated package repository
 
-1. Merge reviewed Conventional Commits from `development` to `master`.
+1. Collect release candidates in `development`, then open a pull request from
+   `development` to `master`. Other source branches are rejected.
 2. The `Publish NuGet` workflow restores in locked mode, audits, formats,
    builds, tests, packs, generates an SBOM, and attests package provenance.
 3. The workflow signs `.nupkg` files unless unsigned publishing was explicitly

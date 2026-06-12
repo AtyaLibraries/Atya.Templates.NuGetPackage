@@ -4,6 +4,14 @@
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\packages</PackageOutputPath>
   </PropertyGroup>
 
+  <Target Name="ValidatePackageNaming"
+          BeforeTargets="Build;Pack"
+          Condition="'$(IsPackable)' == 'true' And '$(SkipPackageNamingValidation)' != 'true'">
+    <Error
+      Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(PackageId)', '^Atya\.[A-Z][A-Za-z0-9]*(\.[A-Z][A-Za-z0-9]*)+$'))"
+      Text="PackageId '$(PackageId)' is invalid. Use Atya.{Area}.{Name} with at least two PascalCase segments after Atya (additional segments are allowed). Set SkipPackageNamingValidation=true only for an explicit exception." />
+  </Target>
+
   <!-- Fail fast if a packable project is missing critical NuGet metadata. -->
   <Target Name="ValidatePackageMetadata" BeforeTargets="Pack" Condition="'$(IsPackable)' == 'true'">
     <Error Condition="'$(PackageId)' == ''" Text="PackageId must be set before packing." />

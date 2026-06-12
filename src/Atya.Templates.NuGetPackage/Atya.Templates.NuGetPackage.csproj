@@ -19,12 +19,8 @@
   </ItemGroup>
 
   <ItemGroup Label="Runtime dependency + analyzers + versioning">
-    <!--#if (includeAtyaGuards) -->
-    <PackageReference Include="Atya.Foundation.Guards" Condition="'$(IncludeAtyaGuards)' == 'true'" />
-    <!--#endif -->
-    <!--#if (includeAtyaGovernance) -->
-    <PackageReference Include="Atya.Governance.CodeQuality" PrivateAssets="all" Condition="'$(IncludeAtyaGovernance)' == 'true'" />
-    <!--#endif -->
+    <PackageReference Include="Atya.Foundation.Guards" />
+    <PackageReference Include="Atya.Governance.CodeQuality" PrivateAssets="all" />
     <PackageReference Include="MinVer" PrivateAssets="all" Condition="'$(IsTemplateSourceRepository)' != 'true'" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" Condition="'$(RepositoryUrlIsConfigured)' == 'true' And '$(IsTemplateSourceRepository)' != 'true'" />
   </ItemGroup>

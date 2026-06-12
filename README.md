@@ -22,18 +22,33 @@ __PACKAGE_DESCRIPTION__
 `-- Directory.Packages.props                       # Central package versions
 ```
 
+## Package naming
+
+Packable projects use `Atya.{Area}.{Name}`. The template accepts either
+`--name Contoso.Example` or `--name Atya.Contoso.Example` and normalizes both
+inputs to `Atya.Contoso.Example` for package, assembly, namespace, solution,
+project, folder, workflow, and repository names.
+
+Use two segments after the optional prefix when creating a repository:
+`{Area}.{Name}`. Areas are controlled vocabulary; the initial approved values
+are `Foundation`, `Governance`, and `Templates`. Adding an area requires a
+deliberate repository-wide naming decision rather than an ad-hoc invention.
+Companion package suffixes such as `.Analyzers` or `.Abstractions` remain valid.
+
+The build fails packable projects whose `PackageId` does not follow the
+convention. Set `SkipPackageNamingValidation=true` only for an explicit
+exception.
+
 ## Template options
 
 | Symbol | Default | Result |
 | --- | --- | --- |
 | `includeBenchmarks` | `true` | Includes the benchmark project. |
 | `includeGitHub` | `true` | Includes `.github/` and `bootstrap.ps1`. |
-| `includeAtyaGuards` | `false` | Adds `Atya.Foundation.Guards` and its wiring test. |
-| `includeAtyaGovernance` | `false` | Uses Atya governance analyzer packages. |
 
-With `includeAtyaGovernance=false`, analyzer coverage comes from
-`Microsoft.CodeAnalysis.NetAnalyzers`, `StyleCop.Analyzers`, and
-`Microsoft.VisualStudio.Threading.Analyzers`.
+Every generated repository includes `Atya.Foundation.Guards`,
+`Atya.Governance.CodeQuality`, and `Atya.Governance.Testing`. These packages
+are part of the template baseline and cannot be disabled with template options.
 
 All generated projects target `net10.0`.
 
@@ -67,10 +82,16 @@ GitHub CLI, and run:
 ./bootstrap.ps1 -RepoOwner __GITHUB_OWNER__ -RepoName Atya.Templates.NuGetPackage
 ```
 
-The script idempotently creates an active repository ruleset for both branches.
-It applies to administrators, requires pull requests and CODEOWNER review,
-requires signed commits and linear history, blocks force pushes and deletion,
-and requires the Linux and Windows CI checks.
+The script idempotently creates active, no-bypass rulesets for both branches.
+Short-lived branches merge into `development` through squash-only pull requests
+with linear history and green Linux and Windows CI checks. Only `development`
+can open a release pull request to `master`; that promotion uses a merge commit
+so the long-lived branches retain shared ancestry. Force pushes, branch
+deletion, and direct pushes are blocked on both branches.
+
+The default rulesets require no external approval so a solo maintainer can
+merge after CI passes and review threads are resolved. Increase the approval
+count or enable CODEOWNER review when another maintainer is available.
 
 Set these repository values before publishing:
 
