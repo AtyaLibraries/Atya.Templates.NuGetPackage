@@ -7,3 +7,7 @@
 ### Added
 
 - Initial package scaffold.
+
+### Changed
+
+- Normalize template names to the enforced `Atya.{Area}.{Name}` convention.

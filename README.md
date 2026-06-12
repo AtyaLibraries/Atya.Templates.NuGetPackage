@@ -22,6 +22,23 @@ __PACKAGE_DESCRIPTION__
 `-- Directory.Packages.props                       # Central package versions
 ```
 
+## Package naming
+
+Packable projects use `Atya.{Area}.{Name}`. The template accepts either
+`--name Contoso.Example` or `--name Atya.Contoso.Example` and normalizes both
+inputs to `Atya.Contoso.Example` for package, assembly, namespace, solution,
+project, folder, workflow, and repository names.
+
+Use two segments after the optional prefix when creating a repository:
+`{Area}.{Name}`. Areas are controlled vocabulary; the initial approved values
+are `Foundation`, `Governance`, and `Templates`. Adding an area requires a
+deliberate repository-wide naming decision rather than an ad-hoc invention.
+Companion package suffixes such as `.Analyzers` or `.Abstractions` remain valid.
+
+The build fails packable projects whose `PackageId` does not follow the
+convention. Set `SkipPackageNamingValidation=true` only for an explicit
+exception.
+
 ## Template options
 
 | Symbol | Default | Result |

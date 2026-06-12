@@ -20,6 +20,18 @@ Run benchmarks only from a Release build:
 dotnet run --configuration Release --project ./benchmarks/Atya.Templates.NuGetPackage.Benchmarks/Atya.Templates.NuGetPackage.Benchmarks.csproj
 ```
 
+## Package naming
+
+Packable projects must use `Atya.{Area}.{Name}` with PascalCase segments. The
+template accepts `{Area}.{Name}` or the already-prefixed
+`Atya.{Area}.{Name}` form and normalizes both to the same package ID.
+Additional segments are allowed for companion packages such as `.Analyzers`
+and `.Abstractions`.
+
+The controlled Area vocabulary starts with `Foundation`, `Governance`, and
+`Templates`. New areas require a deliberate naming decision and documentation
+update; do not introduce areas ad hoc.
+
 ## Branching model
 
 Create short-lived branches from `development` and open pull requests back to
