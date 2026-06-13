@@ -2,9 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.6.11709.129
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atya.Templates.NuGetPackage", "src\Atya.Templates.NuGetPackage\Atya.Templates.NuGetPackage.csproj", "{467BAA01-26E2-4EC3-928C-70A5EAA36811}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGetPackage", "src\NuGetPackage\NuGetPackage.csproj", "{467BAA01-26E2-4EC3-928C-70A5EAA36811}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atya.Templates.NuGetPackage.UnitTests", "tests\Atya.Templates.NuGetPackage.UnitTests\Atya.Templates.NuGetPackage.UnitTests.csproj", "{8B6A28EE-7818-4DE7-B3BE-279B436A17F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGetPackage.UnitTests", "tests\NuGetPackage.UnitTests\NuGetPackage.UnitTests.csproj", "{8B6A28EE-7818-4DE7-B3BE-279B436A17F3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Folder", "Solution Folder", "{4F61F403-4674-487B-ABF4-EE50B96981C1}"
 	ProjectSection(SolutionItems) = preProject
@@ -27,7 +27,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D196C703
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{2C5AB38F-8197-4B93-AC0A-2182F5FAC5D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Atya.Templates.NuGetPackage.Samples.Console", "samples\Atya.Templates.NuGetPackage.Samples.Console\Atya.Templates.NuGetPackage.Samples.Console.csproj", "{177A9C18-53A6-459A-CC8D-01608DB20B5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGetPackage.Samples.Console", "samples\NuGetPackage.Samples.Console\NuGetPackage.Samples.Console.csproj", "{177A9C18-53A6-459A-CC8D-01608DB20B5E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarks", "benchmarks", "{4F208057-661E-4B8F-AD0C-9F56F92C6B00}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGetPackage.Benchmarks", "benchmarks\NuGetPackage.Benchmarks\NuGetPackage.Benchmarks.csproj", "{BA188AA0-3305-D033-CE4E-510CB0A17E3D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +51,10 @@ Global
 		{177A9C18-53A6-459A-CC8D-01608DB20B5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{177A9C18-53A6-459A-CC8D-01608DB20B5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{177A9C18-53A6-459A-CC8D-01608DB20B5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA188AA0-3305-D033-CE4E-510CB0A17E3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA188AA0-3305-D033-CE4E-510CB0A17E3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA188AA0-3305-D033-CE4E-510CB0A17E3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA188AA0-3305-D033-CE4E-510CB0A17E3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +63,7 @@ Global
 		{467BAA01-26E2-4EC3-928C-70A5EAA36811} = {DC4337D4-7797-44F7-AD1F-4A640A4E49D9}
 		{8B6A28EE-7818-4DE7-B3BE-279B436A17F3} = {D196C703-6673-4DC9-84E9-BB492024AAD2}
 		{177A9C18-53A6-459A-CC8D-01608DB20B5E} = {2C5AB38F-8197-4B93-AC0A-2182F5FAC5D3}
+		{BA188AA0-3305-D033-CE4E-510CB0A17E3D} = {4F208057-661E-4B8F-AD0C-9F56F92C6B00}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C4D89AE8-AFEA-4B36-82D9-2BBF683661B0}

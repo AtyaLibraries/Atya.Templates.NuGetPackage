@@ -10,6 +10,12 @@
     <Error
       Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(PackageId)', '^Atya\.[A-Z][A-Za-z0-9]*(\.[A-Z][A-Za-z0-9]*)+$'))"
       Text="PackageId '$(PackageId)' is invalid. Use Atya.{Area}.{Name} with at least two PascalCase segments after Atya (additional segments are allowed). Set SkipPackageNamingValidation=true only for an explicit exception." />
+    <Error
+      Condition="'$(AssemblyName)' != '$(PackageId)'"
+      Text="AssemblyName '$(AssemblyName)' must equal PackageId '$(PackageId)' for packable projects. Set SkipPackageNamingValidation=true only for an explicit exception." />
+    <Error
+      Condition="'$(RootNamespace)' != '$(PackageId)'"
+      Text="RootNamespace '$(RootNamespace)' must equal PackageId '$(PackageId)' for packable projects. Set SkipPackageNamingValidation=true only for an explicit exception." />
   </Target>
 
   <!-- Fail fast if a packable project is missing critical NuGet metadata. -->

@@ -11,3 +11,5 @@
 ### Changed
 
 - Normalize template names to the enforced `Atya.{Area}.{Name}` convention.
+- Use the full package ID for public identity and the final name segment for
+  local solution, project, folder, and workflow artifact names.

@@ -7,7 +7,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Atya.Templates.NuGetPackage\Atya.Templates.NuGetPackage.csproj" />
+    <ProjectReference Include="..\..\src\NuGetPackage\NuGetPackage.csproj" />
   </ItemGroup>
 
 </Project>
