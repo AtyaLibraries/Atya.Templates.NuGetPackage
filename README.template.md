@@ -33,9 +33,9 @@ This repository uses two related names:
   project files, folders, project references, workflow paths, and test friend
   assembly name.
 
-The template accepts either `--name Contoso.Example4` or
-`--name Atya.Contoso.Example4`. Both produce `FULL_ID =
-Atya.Contoso.Example4` and `SHORT = Example4`.
+The template accepts either `--name Foundation.Caching` or
+`--name Atya.Foundation.Caching`. Both produce `FULL_ID =
+Atya.Foundation.Caching` and `SHORT = Caching`.
 
 Use `{Area}.{Name}` after the optional `Atya.` prefix. Areas are controlled
 vocabulary; the initial approved values are `Foundation`, `Governance`, and
