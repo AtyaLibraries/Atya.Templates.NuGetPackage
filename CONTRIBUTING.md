@@ -17,16 +17,21 @@ Commit those files so local and CI restores resolve the same dependency graph.
 Run benchmarks only from a Release build:
 
 ```bash
-dotnet run --configuration Release --project ./benchmarks/Atya.Templates.NuGetPackage.Benchmarks/Atya.Templates.NuGetPackage.Benchmarks.csproj
+dotnet run --configuration Release --project ./benchmarks/NuGetPackage.Benchmarks/NuGetPackage.Benchmarks.csproj
 ```
 
 ## Package naming
 
-Packable projects must use `Atya.{Area}.{Name}` with PascalCase segments. The
-template accepts `{Area}.{Name}` or the already-prefixed
-`Atya.{Area}.{Name}` form and normalizes both to the same package ID.
+Packable projects use a full public identity and a short local name. For
+`--name Contoso.Example4` or `--name Atya.Contoso.Example4`, the public
+`PackageId`, `AssemblyName`, `RootNamespace`, and namespaces are
+`Atya.Contoso.Example4`, while solution, project, folder, workflow, and
+non-shipping assembly names use `Example4`.
+
+The public ID must use `Atya.{Area}.{Name}` with PascalCase segments.
 Additional segments are allowed for companion packages such as `.Analyzers`
-and `.Abstractions`.
+and `.Abstractions`. Packable projects must keep `AssemblyName` and
+`RootNamespace` equal to `PackageId`.
 
 The controlled Area vocabulary starts with `Foundation`, `Governance`, and
 `Templates`. New areas require a deliberate naming decision and documentation

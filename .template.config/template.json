@@ -13,7 +13,7 @@
   "description": "Creates a production-ready Atya.{Area}.{Name} .NET package repository with source, tests, samples, benchmarks, central package management, and GitHub CI/release workflows.",
   "primaryOutputs": [
     {
-      "path": "Atya.Templates.NuGetPackage.sln"
+      "path": "NuGetPackage.sln"
     }
   ],
   "tags": {
@@ -24,13 +24,16 @@
     {
       "source": "./",
       "target": "./",
+      "rename": {
+        "README.template.md": "README.md"
+      },
       "exclude": [
         ".template.config/**",
         ".template.variants/**",
         ".claude/**",
         ".tmp",
         ".tmp/**",
-        "README.template.md",
+        "README.md",
         "template-smoke-test.ps1",
         "Atya.Templates.NuGetPackage.csproj",
         "PACKAGE_README.md",
@@ -39,7 +42,7 @@
         "**/packages.lock.json",
         ".github/workflows/test-template.yml",
         ".github/workflows/publish-template.yml",
-        "Atya.Templates.NuGetPackage.sln",
+        "NuGetPackage.sln",
         "**/[Bb]in/**",
         "**/[Oo]bj/**",
         "**/artifacts/**",
@@ -146,7 +149,7 @@
         "symbols": [
           { "type": "const", "value": "https://github.com" },
           { "type": "ref", "value": "githubOwner" },
-          { "type": "ref", "value": "packageId" }
+          { "type": "ref", "value": "fullId" }
         ],
         "separator": "/",
         "removeEmptyValues": true
@@ -221,12 +224,18 @@
       "replaces": "C4D89AE8-AFEA-4B36-82D9-2BBF683661B0",
       "parameters": { "format": "D" }
     },
-    "packageId": {
+    "fullId": {
       "type": "derived",
       "valueSource": "name",
       "valueTransform": "NormalizePackageId",
-      "replaces": "Atya.Templates.NuGetPackage",
-      "fileRename": "Atya.Templates.NuGetPackage"
+      "replaces": "Atya.Templates.NuGetPackage"
+    },
+    "shortName": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "PackageNameAfterLastDot",
+      "replaces": "NuGetPackage",
+      "fileRename": "NuGetPackage"
     },
     "packageMarkerName": {
       "type": "derived",
