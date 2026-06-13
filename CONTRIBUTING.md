@@ -23,10 +23,10 @@ dotnet run --configuration Release --project ./benchmarks/NuGetPackage.Benchmark
 ## Package naming
 
 Packable projects use a full public identity and a short local name. For
-`--name Contoso.Example4` or `--name Atya.Contoso.Example4`, the public
+`--name Foundation.Caching` or `--name Atya.Foundation.Caching`, the public
 `PackageId`, `AssemblyName`, `RootNamespace`, and namespaces are
-`Atya.Contoso.Example4`, while solution, project, folder, workflow, and
-non-shipping assembly names use `Example4`.
+`Atya.Foundation.Caching`, while solution, project, folder, workflow, and
+non-shipping assembly names use `Caching`.
 
 The public ID must use `Atya.{Area}.{Name}` with PascalCase segments.
 Additional segments are allowed for companion packages such as `.Analyzers`

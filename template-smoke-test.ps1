@@ -8,7 +8,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$PackageName = "Contoso.Example4",
+    [string]$PackageName = "Foundation.Caching",
 
     [switch]$KeepOutput
 )

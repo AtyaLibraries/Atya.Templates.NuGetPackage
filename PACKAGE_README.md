@@ -15,28 +15,26 @@ dotnet new install Atya.Templates.NuGetPackage
 
 ```bash
 dotnet new atya-nuget \
-  --name Contoso.Example4 \
-  --output Atya.Contoso.Example4
+  --name Foundation.Caching \
+  --output Atya.Foundation.Caching
 ```
 
 The template accepts `{Area}.{Name}` and `Atya.{Area}.{Name}` input forms.
 Both normalize idempotently. For the example above:
 
-- `FULL_ID = Atya.Contoso.Example4` is used for the package ID, assembly,
+- `FULL_ID = Atya.Foundation.Caching` is used for the package ID, assembly,
   root namespace, C# namespaces, metadata, README title, and repository URL.
-- `SHORT = Example4` is used for the solution, local projects and folders,
+- `SHORT = Caching` is used for the solution, local projects and folders,
   project references, workflow paths, and non-shipping assembly names.
 
-The generated layout starts with `Example4.sln`,
-`src/Example4/Example4.csproj`, `tests/Example4.UnitTests/`,
-`samples/Example4.Samples.Console/`, and
-`benchmarks/Example4.Benchmarks/`.
+The generated layout starts with `Caching.sln`,
+`src/Caching/Caching.csproj`, `tests/Caching.UnitTests/`,
+`samples/Caching.Samples.Console/`, and
+`benchmarks/Caching.Benchmarks/`.
 
 Areas are controlled vocabulary. The initial approved values are `Foundation`,
 `Governance`, and `Templates`; adding another area requires a deliberate
-naming decision rather than an ad-hoc invention. `Contoso.Example4` is an
-illustrative input and should be replaced with the approved area and package
-name.
+naming decision rather than an ad-hoc invention.
 
 Pass the normalized repository name to `--output` when creating a new
 directory. The .NET template host chooses its automatic output directory from
@@ -59,8 +57,8 @@ controlled by template options.
 
 ```bash
 dotnet new atya-nuget \
-  --name Atya.Contoso.Example4 \
-  --output Atya.Contoso.Example4 \
+  --name Atya.Foundation.Caching \
+  --output Atya.Foundation.Caching \
   --include-benchmarks false
 ```
 
