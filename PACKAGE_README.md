@@ -15,18 +15,26 @@ dotnet new install Atya.Templates.NuGetPackage
 
 ```bash
 dotnet new atya-nuget \
-  --name Contoso.Example \
-  --output Atya.Contoso.Example
+  --name Contoso.Example4 \
+  --output Atya.Contoso.Example4
 ```
 
 The template accepts `{Area}.{Name}` and `Atya.{Area}.{Name}` input forms.
-Both normalize idempotently to `Atya.{Area}.{Name}`. Use two segments after
-the optional prefix for the default package; additional PascalCase segments
-are reserved for companion packages such as `.Analyzers` or `.Abstractions`.
+Both normalize idempotently. For the example above:
+
+- `FULL_ID = Atya.Contoso.Example4` is used for the package ID, assembly,
+  root namespace, C# namespaces, metadata, README title, and repository URL.
+- `SHORT = Example4` is used for the solution, local projects and folders,
+  project references, workflow paths, and non-shipping assembly names.
+
+The generated layout starts with `Example4.sln`,
+`src/Example4/Example4.csproj`, `tests/Example4.UnitTests/`,
+`samples/Example4.Samples.Console/`, and
+`benchmarks/Example4.Benchmarks/`.
 
 Areas are controlled vocabulary. The initial approved values are `Foundation`,
 `Governance`, and `Templates`; adding another area requires a deliberate
-naming decision rather than an ad-hoc invention. `Contoso.Example` is an
+naming decision rather than an ad-hoc invention. `Contoso.Example4` is an
 illustrative input and should be replaced with the approved area and package
 name.
 
@@ -51,8 +59,8 @@ controlled by template options.
 
 ```bash
 dotnet new atya-nuget \
-  --name Contoso.Example \
-  --output Atya.Contoso.Example \
+  --name Atya.Contoso.Example4 \
+  --output Atya.Contoso.Example4 \
   --include-benchmarks false
 ```
 
@@ -61,13 +69,14 @@ dotnet new atya-nuget \
 - NuGet auditing at `low` severity or higher and lock-file enforcement in CI.
 - Formatting, build, xUnit tests, TRX reporting, and an 80% line coverage gate.
 - Package validation, symbols, SourceLink, SBOM generation, and provenance attestation.
-- A build and pack guard that rejects nonconforming package IDs unless
+- A build and pack guard that rejects nonconforming package IDs and requires
+  `AssemblyName` and `RootNamespace` to equal `PackageId`, unless
   `SkipPackageNamingValidation=true` is set for an explicit exception.
 - Signed publishing by default when GitHub publishing is enabled.
 - Rulesets-based protection for `development` and `master`.
 
 The template includes a neutral package icon. Replace
-`src/<PackageName>/icon.png` with the final 128x128 package artwork before the
+`src/<SHORT>/icon.png` with the final 128x128 package artwork before the
 first public release.
 
 ## Versioning

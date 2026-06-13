@@ -8,7 +8,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$PackageName = "Contoso.Example",
+    [string]$PackageName = "Contoso.Example4",
 
     [switch]$KeepOutput
 )
@@ -17,6 +17,7 @@ $ErrorActionPreference = "Stop"
 $templateRoot = $PSScriptRoot
 $repoRoot = Resolve-Path $templateRoot
 $scratchRoot = Join-Path ([System.IO.Path]::GetTempPath()) "atya-nuget-smoke-$([guid]::NewGuid().ToString('N').Substring(0, 8))"
+$templateHive = Join-Path $scratchRoot ".template-hive"
 
 function Invoke-NativeCommand {
     param(
@@ -40,6 +41,15 @@ function Get-NormalizedPackageId {
     )
 
     return "Atya.$($Name -replace '^[Aa]tya\.', '')"
+}
+
+function Get-ShortName {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    return ($Name -replace '^.*\.', '')
 }
 
 function Get-GeneratedFiles {
@@ -66,25 +76,38 @@ function Assert-NoPlaceholders {
         [string]$Path,
 
         [Parameter(Mandatory = $true)]
-        [string]$ExpectedPackageId
+        [string]$ExpectedShortName
     )
 
     $generatedFiles = @(Get-GeneratedFiles -Path $Path)
+    $forbiddenPattern = @(
+        '__PACKAGE_NAME__',
+        '__PACKAGE_DESCRIPTION__',
+        '__PACKAGE_AUTHORS__',
+        '__PACKAGE_COMPANY__',
+        '__PACKAGE_TAGS__',
+        '__GITHUB_OWNER__',
+        '__REPOSITORY_URL__',
+        '__PACKAGE_MARKER_NAME__',
+        'Atya\.Templates\.NuGetPackage',
+        '\bNuGetPackage\b',
+        "Atya\.Templates\.$([regex]::Escape($ExpectedShortName))",
+        'Atya\.Atya'
+    ) -join '|'
     $placeholderMatches = $generatedFiles.FullName |
-        Select-String -Pattern '__PACKAGE_NAME__|__PACKAGE_DESCRIPTION__|__PACKAGE_AUTHORS__|__PACKAGE_COMPANY__|__PACKAGE_TAGS__|__GITHUB_OWNER__|__REPOSITORY_URL__|__PACKAGE_MARKER_NAME__|__INCLUDE_ATYA_GUARDS__|__INCLUDE_ATYA_GOVERNANCE__|Atya\.Templates\.NuGetPackage'
+        Select-String -Pattern $forbiddenPattern
 
     if ($placeholderMatches) {
         $details = $placeholderMatches | ForEach-Object { "$($_.Path):$($_.LineNumber):$($_.Line.Trim())" }
-        throw "Template placeholders remain in generated output:`n$($details -join "`n")"
+        throw "Template placeholders or mixed naming tokens remain in generated output:`n$($details -join "`n")"
     }
 
-    $bareName = $ExpectedPackageId -replace '^Atya\.', ''
-    $bareNamePattern = "(?<!Atya\.)$([regex]::Escape($bareName))"
-    $bareNameMatches = $generatedFiles.FullName | Select-String -Pattern $bareNamePattern
+    $invalidPaths = $generatedFiles.RelativePath | Where-Object {
+        $_ -match 'Atya\.Templates\.NuGetPackage|\bNuGetPackage\b|Atya\.Atya'
+    }
 
-    if ($bareNameMatches) {
-        $details = $bareNameMatches | ForEach-Object { "$($_.Path):$($_.LineNumber):$($_.Line.Trim())" }
-        throw "Bare package identifiers remain in generated output:`n$($details -join "`n")"
+    if ($invalidPaths) {
+        throw "Template or mixed naming tokens remain in generated paths:`n$($invalidPaths -join "`n")"
     }
 }
 
@@ -98,10 +121,13 @@ function Assert-GeneratedNaming {
     )
 
     $expectedPackageId = $Scenario.ExpectedPackageId
-    Assert-NoPlaceholders -Path $OutputPath -ExpectedPackageId $expectedPackageId
+    $expectedShortName = $Scenario.ExpectedShortName
+    Assert-NoPlaceholders `
+        -Path $OutputPath `
+        -ExpectedShortName $expectedShortName
 
     $expectedFiles = @(
-        "$expectedPackageId.sln",
+        "$expectedShortName.sln",
         "CHANGELOG.md",
         "CONTRIBUTING.md",
         "Directory.Build.targets",
@@ -109,12 +135,12 @@ function Assert-GeneratedNaming {
         "nuget.config",
         "README.md",
         "SECURITY.md",
-        "samples/$expectedPackageId.Samples.Console/$expectedPackageId.Samples.Console.csproj",
-        "src/$expectedPackageId/$expectedPackageId.cs",
-        "src/$expectedPackageId/$expectedPackageId.csproj",
-        "src/$expectedPackageId/Properties/AssemblyInfo.cs",
-        "src/$expectedPackageId/icon.png",
-        "tests/$expectedPackageId.UnitTests/$expectedPackageId.UnitTests.csproj"
+        "samples/$expectedShortName.Samples.Console/$expectedShortName.Samples.Console.csproj",
+        "src/$expectedShortName/$expectedShortName.cs",
+        "src/$expectedShortName/$expectedShortName.csproj",
+        "src/$expectedShortName/Properties/AssemblyInfo.cs",
+        "src/$expectedShortName/icon.png",
+        "tests/$expectedShortName.UnitTests/$expectedShortName.UnitTests.csproj"
     )
 
     if ($Scenario.ExpectGitHub) {
@@ -129,7 +155,7 @@ function Assert-GeneratedNaming {
     }
 
     if ($Scenario.ExpectBenchmarks) {
-        $expectedFiles += "benchmarks/$expectedPackageId.Benchmarks/$expectedPackageId.Benchmarks.csproj"
+        $expectedFiles += "benchmarks/$expectedShortName.Benchmarks/$expectedShortName.Benchmarks.csproj"
     }
 
     $missingFiles = $expectedFiles | Where-Object {
@@ -140,7 +166,7 @@ function Assert-GeneratedNaming {
         throw "Expected generated files are missing:`n$($missingFiles -join "`n")"
     }
 
-    $benchmarkProject = Join-Path $OutputPath "benchmarks/$expectedPackageId.Benchmarks/$expectedPackageId.Benchmarks.csproj"
+    $benchmarkProject = Join-Path $OutputPath "benchmarks/$expectedShortName.Benchmarks/$expectedShortName.Benchmarks.csproj"
     if ($Scenario.ExpectBenchmarks -and -not (Test-Path $benchmarkProject)) {
         throw "Expected benchmark project is missing."
     }
@@ -155,7 +181,7 @@ function Assert-GeneratedNaming {
         throw "GitHub files were generated when includeGitHub=false."
     }
 
-    $packageProjectPath = Join-Path $OutputPath "src/$expectedPackageId/$expectedPackageId.csproj"
+    $packageProjectPath = Join-Path $OutputPath "src/$expectedShortName/$expectedShortName.csproj"
     [xml]$packageProject = Get-Content -Path $packageProjectPath
     $propertyGroup = $packageProject.SelectSingleNode("/Project/PropertyGroup")
 
@@ -166,24 +192,35 @@ function Assert-GeneratedNaming {
         }
     }
 
-    $assemblyInfo = Get-Content -Path (Join-Path $OutputPath "src/$expectedPackageId/Properties/AssemblyInfo.cs") -Raw
-    if ($assemblyInfo -notmatch [regex]::Escape("InternalsVisibleTo(`"$expectedPackageId.UnitTests`")")) {
-        throw "InternalsVisibleTo does not reference '$expectedPackageId.UnitTests'."
+    $assemblyInfo = Get-Content -Path (Join-Path $OutputPath "src/$expectedShortName/Properties/AssemblyInfo.cs") -Raw
+    if ($assemblyInfo -notmatch [regex]::Escape("InternalsVisibleTo(`"$expectedShortName.UnitTests`")")) {
+        throw "InternalsVisibleTo does not reference '$expectedShortName.UnitTests'."
     }
 
-    $solution = Get-Content -Path (Join-Path $OutputPath "$expectedPackageId.sln") -Raw
+    $solution = Get-Content -Path (Join-Path $OutputPath "$expectedShortName.sln") -Raw
     foreach ($projectName in @(
-        $expectedPackageId,
-        "$expectedPackageId.UnitTests",
-        "$expectedPackageId.Samples.Console"
+        $expectedShortName,
+        "$expectedShortName.UnitTests",
+        "$expectedShortName.Samples.Console"
     )) {
         if ($solution -notmatch [regex]::Escape($projectName)) {
             throw "Solution does not reference '$projectName'."
         }
     }
 
-    if ($Scenario.ExpectBenchmarks -and $solution -notmatch [regex]::Escape("$expectedPackageId.Benchmarks")) {
-        throw "Solution does not reference '$expectedPackageId.Benchmarks'."
+    if ($Scenario.ExpectBenchmarks -and $solution -notmatch [regex]::Escape("$expectedShortName.Benchmarks")) {
+        throw "Solution does not reference '$expectedShortName.Benchmarks'."
+    }
+
+    $namespaceDeclarations = Get-ChildItem -Path $OutputPath -Recurse -Filter "*.cs" -File |
+        Select-String -Pattern '^\s*namespace\s+([^;{]+)' |
+        ForEach-Object { $_.Matches[0].Groups[1].Value.Trim() }
+    $invalidNamespaces = $namespaceDeclarations | Where-Object {
+        $_ -ne $expectedPackageId -and -not $_.StartsWith("$expectedPackageId.", [StringComparison]::Ordinal)
+    }
+
+    if ($invalidNamespaces) {
+        throw "Generated C# namespaces do not use FULL_ID '$expectedPackageId':`n$($invalidNamespaces -join "`n")"
     }
 
     [xml]$buildProps = Get-Content -Path (Join-Path $OutputPath "Directory.Build.props")
@@ -202,9 +239,9 @@ function Assert-GeneratedNaming {
     if ($Scenario.ExpectGitHub) {
         $ciWorkflow = Get-Content -Path (Join-Path $OutputPath ".github/workflows/ci.yml") -Raw
         foreach ($expectedPath in @(
-            "SOLUTION_FILE: ./$expectedPackageId.sln",
-            "TEST_PROJECT: ./tests/$expectedPackageId.UnitTests/$expectedPackageId.UnitTests.csproj",
-            "PACKAGE_PROJECT: ./src/$expectedPackageId/$expectedPackageId.csproj"
+            "SOLUTION_FILE: ./$expectedShortName.sln",
+            "TEST_PROJECT: ./tests/$expectedShortName.UnitTests/$expectedShortName.UnitTests.csproj",
+            "PACKAGE_PROJECT: ./src/$expectedShortName/$expectedShortName.csproj"
         )) {
             if ($ciWorkflow -notmatch [regex]::Escape($expectedPath)) {
                 throw "Generated CI workflow is missing '$expectedPath'."
@@ -223,6 +260,7 @@ function Invoke-GeneratedLifecycle {
     )
 
     $expectedPackageId = $Scenario.ExpectedPackageId
+    $expectedShortName = $Scenario.ExpectedShortName
 
     Push-Location $OutputPath
     try {
@@ -246,22 +284,22 @@ function Invoke-GeneratedLifecycle {
         }
 
         Invoke-NativeCommand -Description "$($Scenario.Name) locked-mode restore" -Command {
-            dotnet restore "./$expectedPackageId.sln" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
+            dotnet restore "./$expectedShortName.sln" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
         }
 
-        $packageLock = Get-Content -Path "./src/$expectedPackageId/packages.lock.json" -Raw
+        $packageLock = Get-Content -Path "./src/$expectedShortName/packages.lock.json" -Raw
         if ($packageLock -notmatch '"MinVer"' -or $packageLock -notmatch '"Microsoft.SourceLink.GitHub"') {
             throw "Generated package lock file is missing MinVer or Microsoft.SourceLink.GitHub."
         }
 
         Invoke-NativeCommand -Description "$($Scenario.Name) Release build" -Command {
-            dotnet build "./$expectedPackageId.sln" --configuration Release --no-restore --verbosity minimal
+            dotnet build "./$expectedShortName.sln" --configuration Release --no-restore --verbosity minimal
         }
         Invoke-NativeCommand -Description "$($Scenario.Name) unit tests" -Command {
-            dotnet test "./tests/$expectedPackageId.UnitTests/$expectedPackageId.UnitTests.csproj" --configuration Release --no-build --verbosity minimal
+            dotnet test "./tests/$expectedShortName.UnitTests/$expectedShortName.UnitTests.csproj" --configuration Release --no-build --verbosity minimal
         }
         Invoke-NativeCommand -Description "$($Scenario.Name) package creation" -Command {
-            dotnet pack "./src/$expectedPackageId/$expectedPackageId.csproj" --configuration Release --no-build --output ./artifacts/packages --verbosity minimal
+            dotnet pack "./src/$expectedShortName/$expectedShortName.csproj" --configuration Release --no-build --output ./artifacts/packages --verbosity minimal
         }
 
         $nupkg = @(Get-ChildItem -Path ./artifacts/packages -Filter "*.nupkg")
@@ -273,6 +311,22 @@ function Invoke-GeneratedLifecycle {
 
         if ($snupkg.Count -ne 1) {
             throw "Expected exactly one .snupkg, found $($snupkg.Count)."
+        }
+
+        if ($nupkg[0].Name -notmatch "^$([regex]::Escape($expectedPackageId))\..+\.nupkg$") {
+            throw "Package '$($nupkg[0].Name)' does not use PackageId '$expectedPackageId'."
+        }
+
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+        $packageArchive = [System.IO.Compression.ZipFile]::OpenRead($nupkg[0].FullName)
+        try {
+            $expectedAssemblyPath = "lib/net10.0/$expectedPackageId.dll"
+            if (-not ($packageArchive.Entries | Where-Object { $_.FullName -eq $expectedAssemblyPath })) {
+                throw "Package '$($nupkg[0].Name)' does not contain '$expectedAssemblyPath'."
+            }
+        }
+        finally {
+            $packageArchive.Dispose()
         }
     }
     finally {
@@ -298,7 +352,8 @@ function Invoke-SmokeScenario {
         "--authors", "Smoke Tester",
         "--company", "SmokeCo",
         "--github-owner", "AtyaLibraries",
-        "--no-update-check"
+        "--no-update-check",
+        "--debug:custom-hive", $templateHive
     ) + $Scenario.Arguments
 
     Invoke-NativeCommand -Description "$($Scenario.Name) template generation" -Command {
@@ -354,40 +409,24 @@ function Assert-EquivalentGeneratedOutput {
     }
 }
 
-function Assert-InvalidPackageIdFailsFirstBuild {
-    $scenario = @{
-        Name = "InvalidPackageId"
-        InputName = "Contoso.Invalid"
-        ExpectedPackageId = "Atya.Contoso.Invalid"
-        Arguments = @("--include-benchmarks", "false", "--include-github", "false")
-        ExpectBenchmarks = $false
-        ExpectGitHub = $false
-    }
-    $outputPath = Join-Path $scratchRoot $scenario.Name
+function Assert-BuildFailsWithNamingError {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$OutputPath,
 
-    Write-Host "`n[InvalidPackageId] Verifying first-build naming failure..." -ForegroundColor Yellow
-    New-Item -ItemType Directory -Path $outputPath | Out-Null
+        [Parameter(Mandatory = $true)]
+        [string]$SolutionName,
 
-    $newArgs = @(
-        "new", "atya-nuget",
-        "--name", $scenario.InputName,
-        "--output", $outputPath,
-        "--no-update-check"
-    ) + $scenario.Arguments
+        [Parameter(Mandatory = $true)]
+        [string]$ExpectedError,
 
-    Invoke-NativeCommand -Description "InvalidPackageId template generation" -Command {
-        dotnet @newArgs
-    }
-    Assert-GeneratedNaming -Scenario $scenario -OutputPath $outputPath
+        [Parameter(Mandatory = $true)]
+        [string]$Description
+    )
 
-    $packageProjectPath = Join-Path $outputPath "src/$($scenario.ExpectedPackageId)/$($scenario.ExpectedPackageId).csproj"
-    [xml]$packageProject = Get-Content -Path $packageProjectPath
-    $packageProject.SelectSingleNode("/Project/PropertyGroup/PackageId").InnerText = "ContosoExample"
-    $packageProject.Save($packageProjectPath)
-
-    Push-Location $outputPath
+    Push-Location $OutputPath
     try {
-        $buildLines = & dotnet build "./$($scenario.ExpectedPackageId).sln" --configuration Release --verbosity minimal 2>&1
+        $buildLines = & dotnet build "./$SolutionName.sln" --configuration Release --verbosity minimal 2>&1
         $buildExitCode = $LASTEXITCODE
         $buildOutput = $buildLines | Out-String
     }
@@ -396,24 +435,78 @@ function Assert-InvalidPackageIdFailsFirstBuild {
     }
 
     if ($buildExitCode -eq 0) {
-        throw "A generated repository with invalid PackageId 'ContosoExample' built successfully."
+        throw "$Description built successfully when it should have failed."
     }
 
-    $expectedError = "PackageId 'ContosoExample' is invalid."
-    if ($buildOutput -notmatch [regex]::Escape($expectedError) -or
+    if ($buildOutput -notmatch [regex]::Escape($ExpectedError) -or
         $buildOutput -notmatch "SkipPackageNamingValidation=true") {
-        throw "Invalid PackageId build did not emit the actionable naming error:`n$buildOutput"
+        throw "$Description did not emit the actionable naming error:`n$buildOutput"
     }
+}
 
-    Write-Host "[InvalidPackageId] Passed." -ForegroundColor Green
+function Assert-NamingGuardsFailFirstBuild {
+    $scenario = @{
+        Name = "NamingGuards"
+        InputName = "Contoso.GuardCheck"
+        ExpectedPackageId = "Atya.Contoso.GuardCheck"
+        ExpectedShortName = "GuardCheck"
+        Arguments = @("--include-benchmarks", "false", "--include-github", "false")
+        ExpectBenchmarks = $false
+        ExpectGitHub = $false
+    }
+    $outputPath = Join-Path $scratchRoot $scenario.Name
+
+    Write-Host "`n[NamingGuards] Verifying first-build naming failures..." -ForegroundColor Yellow
+    New-Item -ItemType Directory -Path $outputPath | Out-Null
+
+    $newArgs = @(
+        "new", "atya-nuget",
+        "--name", $scenario.InputName,
+        "--output", $outputPath,
+        "--no-update-check",
+        "--debug:custom-hive", $templateHive
+    ) + $scenario.Arguments
+
+    Invoke-NativeCommand -Description "NamingGuards template generation" -Command {
+        dotnet @newArgs
+    }
+    Assert-GeneratedNaming -Scenario $scenario -OutputPath $outputPath
+
+    $packageProjectPath = Join-Path $outputPath "src/$($scenario.ExpectedShortName)/$($scenario.ExpectedShortName).csproj"
+    $originalProject = Get-Content -Path $packageProjectPath -Raw
+    [xml]$packageProject = Get-Content -Path $packageProjectPath
+    $assemblyName = $packageProject.SelectSingleNode("/Project/PropertyGroup/AssemblyName")
+    $null = $assemblyName.ParentNode.RemoveChild($assemblyName)
+    $packageProject.Save($packageProjectPath)
+
+    Assert-BuildFailsWithNamingError `
+        -OutputPath $outputPath `
+        -SolutionName $scenario.ExpectedShortName `
+        -ExpectedError "AssemblyName '$($scenario.ExpectedShortName)' must equal PackageId '$($scenario.ExpectedPackageId)'" `
+        -Description "Generated project without explicit AssemblyName"
+
+    [System.IO.File]::WriteAllText($packageProjectPath, $originalProject)
+    [xml]$packageProject = Get-Content -Path $packageProjectPath
+    $packageProject.SelectSingleNode("/Project/PropertyGroup/PackageId").InnerText = "ContosoExample"
+    $packageProject.Save($packageProjectPath)
+
+    Assert-BuildFailsWithNamingError `
+        -OutputPath $outputPath `
+        -SolutionName $scenario.ExpectedShortName `
+        -ExpectedError "PackageId 'ContosoExample' is invalid." `
+        -Description "Generated project with invalid PackageId"
+
+    Write-Host "[NamingGuards] Passed." -ForegroundColor Green
 }
 
 $baselinePackageId = Get-NormalizedPackageId -Name $PackageName
+$baselineShortName = Get-ShortName -Name $PackageName
 $scenarios = @(
     @{
         Name = "Baseline"
         InputName = $PackageName
         ExpectedPackageId = $baselinePackageId
+        ExpectedShortName = $baselineShortName
         Arguments = @()
         ExpectBenchmarks = $true
         ExpectGitHub = $true
@@ -423,6 +516,7 @@ $scenarios = @(
         Name = "Prefixed"
         InputName = $baselinePackageId
         ExpectedPackageId = $baselinePackageId
+        ExpectedShortName = $baselineShortName
         Arguments = @()
         ExpectBenchmarks = $true
         ExpectGitHub = $true
@@ -432,6 +526,7 @@ $scenarios = @(
         Name = "NoBenchmarks"
         InputName = "Contoso.NoBenchmarks"
         ExpectedPackageId = "Atya.Contoso.NoBenchmarks"
+        ExpectedShortName = "NoBenchmarks"
         Arguments = @("--include-benchmarks", "false")
         ExpectBenchmarks = $false
         ExpectGitHub = $true
@@ -441,6 +536,7 @@ $scenarios = @(
         Name = "NoGitHub"
         InputName = "Contoso.NoGitHub"
         ExpectedPackageId = "Atya.Contoso.NoGitHub"
+        ExpectedShortName = "NoGitHub"
         Arguments = @("--include-github", "false")
         ExpectBenchmarks = $true
         ExpectGitHub = $false
@@ -453,12 +549,13 @@ Write-Host "Repo root    : $repoRoot" -ForegroundColor Cyan
 Write-Host "Scratch root : $scratchRoot" -ForegroundColor Cyan
 
 try {
+    New-Item -ItemType Directory -Path $scratchRoot | Out-Null
+
     Write-Host "`nInstalling template from $repoRoot..." -ForegroundColor Yellow
     Invoke-NativeCommand -Description "Template installation" -Command {
-        dotnet new install "$repoRoot" --force | Out-Null
+        dotnet new install "$repoRoot" --force --debug:custom-hive $templateHive | Out-Null
     }
 
-    New-Item -ItemType Directory -Path $scratchRoot | Out-Null
     $scenarioOutputs = @{}
     foreach ($scenario in $scenarios) {
         $scenarioOutputs[$scenario.Name] = Invoke-SmokeScenario -Scenario $scenario
@@ -469,7 +566,7 @@ try {
         -PrefixedPath $scenarioOutputs.Prefixed
     Write-Host "[Idempotence] Prefixed and unprefixed output matched." -ForegroundColor Green
 
-    Assert-InvalidPackageIdFailsFirstBuild
+    Assert-NamingGuardsFailFirstBuild
 
     Write-Host "`n[OK] All template smoke-test scenarios passed." -ForegroundColor Green
 }
