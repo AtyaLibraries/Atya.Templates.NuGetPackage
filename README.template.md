@@ -54,11 +54,12 @@ The build fails packable projects whose `PackageId` is invalid or whose
 | `includeBenchmarks` | `true` | Includes the benchmark project. |
 | `includeGitHub` | `true` | Includes `.github/` and `bootstrap.ps1`. |
 
-Every generated repository includes `Atya.Foundation.Guards`,
-`Atya.Governance.CodeQuality`, and `Atya.Governance.Testing`. These packages
-are part of the template baseline and cannot be disabled with template options.
+Every generated repository references `Atya.Foundation.Guards` at runtime and
+uses `Atya.Build.Sdk` for shared build, analyzer, versioning, SourceLink, and
+test-stack wiring. These baseline choices cannot be disabled with template
+options.
 
-All generated projects target `net10.0`.
+All generated projects target `net10.0` through `Atya.Build.Sdk`.
 
 ## Development
 

@@ -52,6 +52,24 @@ function Get-ShortName {
     return ($Name -replace '^.*\.', '')
 }
 
+function Get-MSBuildProperty {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ProjectPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$PropertyName
+    )
+
+    $propertyLines = & dotnet msbuild $ProjectPath "-getProperty:$PropertyName" -nologo 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        $details = $propertyLines | Out-String
+        throw "Failed to evaluate MSBuild property '$PropertyName' for '$ProjectPath':`n$details"
+    }
+
+    return ($propertyLines | Out-String).Trim()
+}
+
 function Get-GeneratedFiles {
     param(
         [Parameter(Mandatory = $true)]
@@ -130,8 +148,9 @@ function Assert-GeneratedNaming {
         "$expectedShortName.sln",
         "CHANGELOG.md",
         "CONTRIBUTING.md",
-        "Directory.Build.targets",
+        "Directory.Packages.props",
         "docs/RELEASING.md",
+        "global.json",
         "nuget.config",
         "README.md",
         "SECURITY.md",
@@ -166,6 +185,14 @@ function Assert-GeneratedNaming {
         throw "Expected generated files are missing:`n$($missingFiles -join "`n")"
     }
 
+    $removedBuildFiles = @("Directory.Build.props", "Directory.Build.targets") | Where-Object {
+        Test-Path (Join-Path $OutputPath $_)
+    }
+
+    if ($removedBuildFiles) {
+        throw "Generated output still contains root build files that should come from Atya.Build.Sdk:`n$($removedBuildFiles -join "`n")"
+    }
+
     $benchmarkProject = Join-Path $OutputPath "benchmarks/$expectedShortName.Benchmarks/$expectedShortName.Benchmarks.csproj"
     if ($Scenario.ExpectBenchmarks -and -not (Test-Path $benchmarkProject)) {
         throw "Expected benchmark project is missing."
@@ -183,6 +210,11 @@ function Assert-GeneratedNaming {
 
     $packageProjectPath = Join-Path $OutputPath "src/$expectedShortName/$expectedShortName.csproj"
     [xml]$packageProject = Get-Content -Path $packageProjectPath
+    $packageProjectSdk = $packageProject.DocumentElement.GetAttribute("Sdk")
+    if ($packageProjectSdk -ne "Atya.Build.Sdk") {
+        throw "Expected package project SDK 'Atya.Build.Sdk', found '$packageProjectSdk'."
+    }
+
     $propertyGroup = $packageProject.SelectSingleNode("/Project/PropertyGroup")
 
     foreach ($propertyName in @("PackageId", "AssemblyName", "RootNamespace")) {
@@ -190,6 +222,52 @@ function Assert-GeneratedNaming {
         if ($actualValue -ne $expectedPackageId) {
             throw "Expected $propertyName '$expectedPackageId', found '$actualValue'."
         }
+    }
+
+    $globalJson = Get-Content -Path (Join-Path $OutputPath "global.json") -Raw | ConvertFrom-Json
+    $buildSdkVersion = $globalJson.'msbuild-sdks'.'Atya.Build.Sdk'
+    if ($buildSdkVersion -ne "1.3.0") {
+        throw "Expected global.json to pin Atya.Build.Sdk 1.3.0, found '$buildSdkVersion'."
+    }
+
+    $targetFramework = Get-MSBuildProperty -ProjectPath $packageProjectPath -PropertyName "TargetFramework"
+    if ($targetFramework -ne "net10.0") {
+        throw "Expected TargetFramework net10.0, found '$targetFramework'."
+    }
+
+    $repositoryUrlNode = $propertyGroup.SelectSingleNode("RepositoryUrl")
+    if ($null -eq $repositoryUrlNode) {
+        throw "Generated package project is missing RepositoryUrl."
+    }
+
+    $repositoryUrl = $repositoryUrlNode.InnerText.Trim()
+    $expectedRepositoryUrl = "https://github.com/AtyaLibraries/$expectedPackageId"
+
+    if ($repositoryUrl -ne $expectedRepositoryUrl) {
+        throw "Expected RepositoryUrl '$expectedRepositoryUrl', found '$repositoryUrl'."
+    }
+
+    $packageReferences = @($packageProject.SelectNodes("/Project/ItemGroup/PackageReference") | ForEach-Object { $_.GetAttribute("Include") })
+    foreach ($forbiddenReference in @("Atya.Governance.CodeQuality", "MinVer", "Microsoft.SourceLink.GitHub")) {
+        if ($packageReferences -contains $forbiddenReference) {
+            throw "Generated package project should not directly reference '$forbiddenReference'."
+        }
+    }
+
+    if ($packageReferences -notcontains "Atya.Foundation.Guards") {
+        throw "Generated package project is missing the Atya.Foundation.Guards runtime reference."
+    }
+
+    $testProjectPath = Join-Path $OutputPath "tests/$expectedShortName.UnitTests/$expectedShortName.UnitTests.csproj"
+    [xml]$testProject = Get-Content -Path $testProjectPath
+    $testProjectSdk = $testProject.DocumentElement.GetAttribute("Sdk")
+    if ($testProjectSdk -ne "Atya.Build.Sdk") {
+        throw "Expected test project SDK 'Atya.Build.Sdk', found '$testProjectSdk'."
+    }
+
+    $testPackageReferences = @($testProject.SelectNodes("/Project/ItemGroup/PackageReference") | ForEach-Object { $_.GetAttribute("Include") })
+    if ($testPackageReferences -contains "Atya.Governance.Testing") {
+        throw "Generated test project should not directly reference Atya.Governance.Testing."
     }
 
     $assemblyInfo = Get-Content -Path (Join-Path $OutputPath "src/$expectedShortName/Properties/AssemblyInfo.cs") -Raw
@@ -221,19 +299,6 @@ function Assert-GeneratedNaming {
 
     if ($invalidNamespaces) {
         throw "Generated C# namespaces do not use FULL_ID '$expectedPackageId':`n$($invalidNamespaces -join "`n")"
-    }
-
-    [xml]$buildProps = Get-Content -Path (Join-Path $OutputPath "Directory.Build.props")
-    $targetFramework = $buildProps.SelectSingleNode("/Project/PropertyGroup/TargetFramework").InnerText.Trim()
-    if ($targetFramework -ne "net10.0") {
-        throw "Expected TargetFramework net10.0, found '$targetFramework'."
-    }
-
-    $repositoryUrl = $buildProps.SelectSingleNode("/Project/PropertyGroup/RepositoryUrl").InnerText.Trim()
-    $expectedRepositoryUrl = "https://github.com/AtyaLibraries/$expectedPackageId"
-
-    if ($repositoryUrl -ne $expectedRepositoryUrl) {
-        throw "Expected RepositoryUrl '$expectedRepositoryUrl', found '$repositoryUrl'."
     }
 
     if ($Scenario.ExpectGitHub) {
