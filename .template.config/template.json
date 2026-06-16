@@ -33,6 +33,10 @@
         ".claude/**",
         ".tmp",
         ".tmp/**",
+        "SECURITY.md",
+        "CONTRIBUTING.md",
+        ".github/ISSUE_TEMPLATE/**",
+        ".github/pull_request_template.md",
         "README.md",
         "template-smoke-test.ps1",
         "Atya.Templates.NuGetPackage.csproj",
@@ -64,7 +68,8 @@
           "condition": "(!includeGitHub)",
           "exclude": [
             ".github/**",
-            "bootstrap.ps1"
+            "bootstrap.ps1",
+            "renovate.json"
           ]
         }
       ]
@@ -176,7 +181,7 @@
       "type": "parameter",
       "datatype": "bool",
       "displayName": "Include GitHub configuration",
-      "description": "Adds .github/ folder with CI/release workflows, Dependabot, and issue templates.",
+      "description": "Adds .github/ folder with CI/release workflows, CODEOWNERS, and Renovate.",
       "defaultValue": "true"
     },
     "skipRestore": {
