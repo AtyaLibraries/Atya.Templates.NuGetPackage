@@ -1,9 +1,9 @@
 # Atya NuGet Package Template
 
 `Atya.Templates.NuGetPackage` scaffolds a production-ready .NET library
-repository with central package management, MinVer, SourceLink, tests, samples,
-optional benchmarks, reproducible restores, package validation, and hardened
-GitHub workflows.
+repository with central package management, Atya.Build.Sdk-backed MinVer and
+SourceLink wiring, tests, samples, optional benchmarks, reproducible restores,
+package validation, and hardened GitHub workflows.
 
 ## Install
 
@@ -41,8 +41,9 @@ directory. The .NET template host chooses its automatic output directory from
 the raw `--name` value before template value transforms run.
 
 The generated repository targets `net10.0`, includes GitHub automation and
-benchmarks, and uses the Atya Guards, CodeQuality, and Testing packages by
-default.
+benchmarks, references the Atya Guards runtime package, and uses
+`Atya.Build.Sdk` for shared build, analyzer, versioning, SourceLink, and
+test-stack wiring.
 
 ## Template options
 
@@ -51,9 +52,9 @@ default.
 | `--include-benchmarks` | `true` | Includes the BenchmarkDotNet project and solution wiring. |
 | `--include-github` | `true` | Includes GitHub workflows, issue templates, CODEOWNERS, Dependabot, and `bootstrap.ps1`. |
 
-`Atya.Foundation.Guards`, `Atya.Governance.CodeQuality`, and
-`Atya.Governance.Testing` are unconditional baseline dependencies and are not
-controlled by template options.
+`Atya.Foundation.Guards` is the unconditional runtime baseline. `Atya.Build.Sdk`
+supplies the shared CodeQuality, Testing, MinVer, and SourceLink wiring. These
+baseline choices are not controlled by template options.
 
 ```bash
 dotnet new atya-nuget \

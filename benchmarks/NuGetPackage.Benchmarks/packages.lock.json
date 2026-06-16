@@ -166,7 +166,7 @@
         "resolved": "4.7.0",
         "contentHash": "VybpaOQQhqE6siHppMktjfGBw1GCwvCqiufqmP8F1nj7fTUNtW35LOEt3UZTEsECfo+ELAl/9o9nJx3U91i7vA=="
       },
-      "atya.templates.nugetpackage": {
+      "Atya.Templates.NuGetPackage": {
         "type": "Project",
         "dependencies": {
           "Atya.Foundation.Guards": "[1.0.0, )"
