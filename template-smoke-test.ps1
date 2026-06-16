@@ -304,9 +304,10 @@ function Assert-GeneratedNaming {
     if ($Scenario.ExpectGitHub) {
         $ciWorkflow = Get-Content -Path (Join-Path $OutputPath ".github/workflows/ci.yml") -Raw
         foreach ($expectedPath in @(
-            "SOLUTION_FILE: ./$expectedShortName.sln",
-            "TEST_PROJECT: ./tests/$expectedShortName.UnitTests/$expectedShortName.UnitTests.csproj",
-            "PACKAGE_PROJECT: ./src/$expectedShortName/$expectedShortName.csproj"
+            "uses: AtyaLibraries/github-workflows/.github/workflows/dotnet-package-ci.yml",
+            "solution: ./$expectedShortName.sln",
+            "test-project: ./tests/$expectedShortName.UnitTests/$expectedShortName.UnitTests.csproj",
+            "package-project: ./src/$expectedShortName/$expectedShortName.csproj"
         )) {
             if ($ciWorkflow -notmatch [regex]::Escape($expectedPath)) {
                 throw "Generated CI workflow is missing '$expectedPath'."
