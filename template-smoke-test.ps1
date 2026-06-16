@@ -147,13 +147,11 @@ function Assert-GeneratedNaming {
     $expectedFiles = @(
         "$expectedShortName.sln",
         "CHANGELOG.md",
-        "CONTRIBUTING.md",
         "Directory.Packages.props",
         "docs/RELEASING.md",
         "global.json",
         "nuget.config",
         "README.md",
-        "SECURITY.md",
         "samples/$expectedShortName.Samples.Console/$expectedShortName.Samples.Console.csproj",
         "src/$expectedShortName/$expectedShortName.cs",
         "src/$expectedShortName/$expectedShortName.csproj",
@@ -165,8 +163,8 @@ function Assert-GeneratedNaming {
     if ($Scenario.ExpectGitHub) {
         $expectedFiles += @(
             "bootstrap.ps1",
+            "renovate.json",
             ".github/CODEOWNERS",
-            ".github/pull_request_template.md",
             ".github/release.yml",
             ".github/workflows/ci.yml",
             ".github/workflows/publish-nuget.yml"
@@ -183,6 +181,19 @@ function Assert-GeneratedNaming {
 
     if ($missingFiles) {
         throw "Expected generated files are missing:`n$($missingFiles -join "`n")"
+    }
+
+    $inheritedCommunityFiles = @(
+        "CONTRIBUTING.md",
+        "SECURITY.md",
+        ".github/pull_request_template.md",
+        ".github/ISSUE_TEMPLATE"
+    ) | Where-Object {
+        Test-Path (Join-Path $OutputPath $_)
+    }
+
+    if ($inheritedCommunityFiles) {
+        throw "Generated output contains community-health files that should be inherited from AtyaLibraries/.github:`n$($inheritedCommunityFiles -join "`n")"
     }
 
     $removedBuildFiles = @("Directory.Build.props", "Directory.Build.targets") | Where-Object {
@@ -204,7 +215,8 @@ function Assert-GeneratedNaming {
 
     $githubPath = Join-Path $OutputPath ".github"
     $bootstrapPath = Join-Path $OutputPath "bootstrap.ps1"
-    if (-not $Scenario.ExpectGitHub -and ((Test-Path $githubPath) -or (Test-Path $bootstrapPath))) {
+    $renovatePath = Join-Path $OutputPath "renovate.json"
+    if (-not $Scenario.ExpectGitHub -and ((Test-Path $githubPath) -or (Test-Path $bootstrapPath) -or (Test-Path $renovatePath))) {
         throw "GitHub files were generated when includeGitHub=false."
     }
 
@@ -302,6 +314,17 @@ function Assert-GeneratedNaming {
     }
 
     if ($Scenario.ExpectGitHub) {
+        $codeOwners = Get-Content -Path (Join-Path $OutputPath ".github/CODEOWNERS") -Raw
+        foreach ($expectedLine in @(
+            "* @AtyaLibraries/maintainers",
+            "/.github/ @AtyaLibraries/maintainers",
+            "/.github/workflows/ @AtyaLibraries/maintainers"
+        )) {
+            if ($codeOwners -notmatch [regex]::Escape($expectedLine)) {
+                throw "Generated CODEOWNERS is missing '$expectedLine'."
+            }
+        }
+
         $ciWorkflow = Get-Content -Path (Join-Path $OutputPath ".github/workflows/ci.yml") -Raw
         foreach ($expectedPath in @(
             "uses: AtyaLibraries/github-workflows/.github/workflows/dotnet-package-ci.yml",
