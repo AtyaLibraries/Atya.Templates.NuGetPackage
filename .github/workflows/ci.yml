@@ -19,17 +19,3 @@ jobs:
       test-project: ./tests/NuGetPackage.UnitTests/NuGetPackage.UnitTests.csproj
       package-project: ./src/NuGetPackage/NuGetPackage.csproj
       allow-empty-coverage: true # scaffold has no covered code yet; set false once you add some
-
-  build-ubuntu-latest:
-    name: build-ubuntu-latest
-    needs: ci
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Reusable CI completed."
-
-  build-windows-latest:
-    name: build-windows-latest
-    needs: ci
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Reusable CI completed."

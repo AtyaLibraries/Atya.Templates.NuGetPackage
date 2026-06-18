@@ -50,7 +50,7 @@ test-stack wiring.
 | Option | Default | Behavior |
 | --- | --- | --- |
 | `--include-benchmarks` | `true` | Includes the BenchmarkDotNet project and solution wiring. |
-| `--include-github` | `true` | Includes GitHub workflows, issue templates, CODEOWNERS, Dependabot, and `bootstrap.ps1`. |
+| `--include-github` | `true` | Includes GitHub workflows, release metadata, and Renovate configuration. |
 
 `Atya.Foundation.Guards` is the unconditional runtime baseline. `Atya.Build.Sdk`
 supplies the shared CodeQuality, Testing, MinVer, and SourceLink wiring. These

@@ -33,8 +33,10 @@
         ".claude/**",
         ".tmp",
         ".tmp/**",
+        "bootstrap.ps1",
         "SECURITY.md",
         "CONTRIBUTING.md",
+        ".github/CODEOWNERS",
         ".github/ISSUE_TEMPLATE/**",
         ".github/pull_request_template.md",
         "README.md",
@@ -68,7 +70,6 @@
           "condition": "(!includeGitHub)",
           "exclude": [
             ".github/**",
-            "bootstrap.ps1",
             "renovate.json"
           ]
         }
@@ -181,7 +182,7 @@
       "type": "parameter",
       "datatype": "bool",
       "displayName": "Include GitHub configuration",
-      "description": "Adds .github/ folder with CI/release workflows, CODEOWNERS, and Renovate.",
+      "description": "Adds .github/ folder with CI/release workflows and Renovate.",
       "defaultValue": "true"
     },
     "skipRestore": {
