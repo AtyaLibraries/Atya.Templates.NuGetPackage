@@ -33,9 +33,9 @@ This repository uses two related names:
   project files, folders, project references, workflow paths, and test friend
   assembly name.
 
-The template accepts either `--name Contoso.Example4` or
-`--name Atya.Contoso.Example4`. Both produce `FULL_ID =
-Atya.Contoso.Example4` and `SHORT = Example4`.
+The template accepts either `--name Foundation.Caching` or
+`--name Atya.Foundation.Caching`. Both produce `FULL_ID =
+Atya.Foundation.Caching` and `SHORT = Caching`.
 
 Use `{Area}.{Name}` after the optional `Atya.` prefix. Areas are controlled
 vocabulary; the initial approved values are `Foundation`, `Governance`, and
@@ -52,13 +52,14 @@ The build fails packable projects whose `PackageId` is invalid or whose
 | Symbol | Default | Result |
 | --- | --- | --- |
 | `includeBenchmarks` | `true` | Includes the benchmark project. |
-| `includeGitHub` | `true` | Includes `.github/` and `bootstrap.ps1`. |
+| `includeGitHub` | `true` | Includes GitHub workflows, release metadata, and Renovate configuration. |
 
-Every generated repository includes `Atya.Foundation.Guards`,
-`Atya.Governance.CodeQuality`, and `Atya.Governance.Testing`. These packages
-are part of the template baseline and cannot be disabled with template options.
+Every generated repository references `Atya.Foundation.Guards` at runtime and
+uses `Atya.Build.Sdk` for shared build, analyzer, versioning, SourceLink, and
+test-stack wiring. These baseline choices cannot be disabled with template
+options.
 
-All generated projects target `net10.0`.
+All generated projects target `net10.0` through `Atya.Build.Sdk`.
 
 ## Development
 
@@ -83,23 +84,12 @@ the package, and uploads symbols.
 
 ## GitHub setup
 
-When `includeGitHub=true`, push `development` and `master`, authenticate the
-GitHub CLI, and run:
-
-```powershell
-./bootstrap.ps1 -RepoOwner __GITHUB_OWNER__ -RepoName Atya.Templates.NuGetPackage
-```
-
-The script idempotently creates active, no-bypass rulesets for both branches.
-Short-lived branches merge into `development` through squash-only pull requests
-with linear history and green Linux and Windows CI checks. Only `development`
-can open a release pull request to `master`; that promotion uses a merge commit
-so the long-lived branches retain shared ancestry. Force pushes, branch
-deletion, and direct pushes are blocked on both branches.
-
-The default rulesets require no external approval so a solo maintainer can
-merge after CI passes and review threads are resolved. Increase the approval
-count or enable CODEOWNER review when another maintainer is available.
+When `includeGitHub=true`, create the repository with `development` as the
+default branch and set the `atya-managed=true` custom property so the
+organization rulesets apply. Short-lived branches merge into `development`
+through pull requests with the required `ci / *` checks. Only `development`
+opens release pull requests to `master`; that promotion uses a merge commit so
+the long-lived branches retain shared ancestry.
 
 Set these repository values before publishing:
 

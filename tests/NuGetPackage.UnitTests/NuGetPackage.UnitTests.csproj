@@ -1,10 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Atya.Build.Sdk">
 
-  <!-- Framework, analyzers, and default test packages are inherited from tests/Directory.Build.props. -->
-
-  <ItemGroup>
-    <PackageReference Include="Atya.Governance.Testing" />
-  </ItemGroup>
+  <!-- Framework, analyzers, and default test packages are provided by Atya.Build.Sdk. -->
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\NuGetPackage\NuGetPackage.csproj" />

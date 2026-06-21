@@ -2,151 +2,20 @@ name: CI
 
 on:
   push:
-    branches: [development]
+    branches: [development, master]
   pull_request:
     branches: [development, master]
   workflow_dispatch:
 
 permissions:
   contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  DOTNET_NOLOGO: true
-  DOTNET_CLI_TELEMETRY_OPTOUT: true
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-  NUGET_XMLDOC_MODE: skip
-  SOLUTION_FILE: ./NuGetPackage.sln
-  TEST_PROJECT: ./tests/NuGetPackage.UnitTests/NuGetPackage.UnitTests.csproj
-  PACKAGE_PROJECT: ./src/NuGetPackage/NuGetPackage.csproj
+  checks: write
 
 jobs:
-  release-source:
-    name: release-source
-    if: github.event_name == 'pull_request' && github.base_ref == 'master'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-
-    steps:
-      - name: Require development as the release source
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        shell: bash
-        run: |
-          if [[ "$HEAD_REF" != "development" ]]; then
-            echo "::error::Pull requests to master must come from development."
-            exit 1
-          fi
-
-  build:
-    name: build-${{ matrix.os }}
-    permissions:
-      contents: read
-      checks: write
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6.0.3
-        with:
-          fetch-depth: 0  # MinVer needs full git history
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2  # v5.3.0
-        with:
-          global-json-file: global.json
-
-      - name: Restore
-        run: dotnet restore "${{ env.SOLUTION_FILE }}" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
-
-      - name: Format
-        if: matrix.os == 'ubuntu-latest'
-        run: dotnet format "${{ env.SOLUTION_FILE }}" --verify-no-changes --verbosity minimal --no-restore
-
-      - name: Build
-        run: dotnet build "${{ env.SOLUTION_FILE }}" --configuration Release --no-restore --verbosity minimal
-
-      - name: Test
-        run: dotnet test "${{ env.TEST_PROJECT }}" --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect "XPlat Code Coverage" --results-directory artifacts/test-results --verbosity minimal
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: test-results-${{ matrix.os }}
-          path: artifacts/test-results
-          if-no-files-found: warn
-
-      - name: Publish test results
-        if: always() && matrix.os == 'ubuntu-latest' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2  # v3.0.0
-        with:
-          name: .NET test results
-          path: artifacts/test-results/**/*.trx
-          reporter: dotnet-trx
-          fail-on-error: true
-
-      - name: Generate coverage report
-        if: matrix.os == 'ubuntu-latest'
-        uses: danielpalme/ReportGenerator-GitHub-Action@049f7ec958c672fd31d5cc1cb01622dc8d2e23ab  # 5.5.10
-        with:
-          reports: artifacts/test-results/**/coverage.cobertura.xml
-          targetdir: artifacts/coverage-report
-          reporttypes: HtmlInline;MarkdownSummaryGithub;Cobertura
-
-      - name: Enforce coverage threshold
-        if: matrix.os == 'ubuntu-latest'
-        shell: pwsh
-        run: |
-          [xml]$coverage = Get-Content -Path artifacts/coverage-report/Cobertura.xml
-          $lineRate = [double]$coverage.coverage.'line-rate'
-          $lineCoverage = [math]::Round($lineRate * 100, 2)
-
-          if ($lineCoverage -lt 80) {
-            throw "Line coverage is $lineCoverage%; required minimum is 80%."
-          }
-
-          Write-Host "Line coverage is $lineCoverage%; required minimum is 80%."
-
-      - name: Publish coverage summary
-        if: matrix.os == 'ubuntu-latest'
-        shell: bash
-        run: cat artifacts/coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload coverage report
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: coverage-report
-          path: artifacts/coverage-report
-          if-no-files-found: warn
-
-      - name: Pack
-        if: matrix.os == 'ubuntu-latest'
-        shell: pwsh
-        run: |
-          $packageProject = $env:PACKAGE_PROJECT
-          if (Test-Path ./Atya.Templates.NuGetPackage.csproj) {
-            $packageProject = "./Atya.Templates.NuGetPackage.csproj"
-            dotnet restore "$packageProject" --verbosity minimal --locked-mode -p:RestoreLockedMode=true
-            dotnet pack "$packageProject" --configuration Release --no-restore --output artifacts/packages --verbosity minimal -p:EnablePackageValidation=true
-          } else {
-            dotnet pack "$packageProject" --configuration Release --no-build --output artifacts/packages --verbosity minimal -p:EnablePackageValidation=true
-          }
-
-      - name: Upload packages
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: packages
-          path: |
-            artifacts/packages/*.nupkg
-            artifacts/packages/*.snupkg
-          if-no-files-found: error
+  ci:
+    uses: AtyaLibraries/github-workflows/.github/workflows/dotnet-package-ci.yml@v1
+    with:
+      solution: ./NuGetPackage.sln
+      test-project: ./tests/NuGetPackage.UnitTests/NuGetPackage.UnitTests.csproj
+      package-project: ./src/NuGetPackage/NuGetPackage.csproj
+      allow-empty-coverage: true # scaffold has no covered code yet; set false once you add some

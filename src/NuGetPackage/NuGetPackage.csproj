@@ -1,15 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Atya.Build.Sdk">
 
   <PropertyGroup>
     <AssemblyName>Atya.Templates.NuGetPackage</AssemblyName>
     <PackageId>Atya.Templates.NuGetPackage</PackageId>
     <RootNamespace>Atya.Templates.NuGetPackage</RootNamespace>
     <IsPackable>true</IsPackable>
+    <Authors>__PACKAGE_AUTHORS__</Authors>
+    <Company>__PACKAGE_COMPANY__</Company>
+    <Copyright>Copyright (c) __COPYRIGHT_YEAR__ __PACKAGE_AUTHORS__</Copyright>
+    <Description>__PACKAGE_DESCRIPTION__</Description>
+    <PackageTags>__PACKAGE_TAGS__</PackageTags>
+    <RepositoryUrl>__REPOSITORY_URL__</RepositoryUrl>
+    <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
 
     <!-- MinVer derives the version from git tags (e.g. tag `v1.2.3` -> 1.2.3). -->
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <MinVerDefaultPreReleaseIdentifiers>alpha.0</MinVerDefaultPreReleaseIdentifiers>
+    <NoWarn Condition="'$(RepositoryUrl)' != '' And $(RepositoryUrl.Contains('__'))">$(NoWarn);CA1707;SA1300</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,11 +26,8 @@
     <None Include="..\..\LICENSE" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
-  <ItemGroup Label="Runtime dependency + analyzers + versioning">
+  <ItemGroup Label="Runtime dependency">
     <PackageReference Include="Atya.Foundation.Guards" />
-    <PackageReference Include="Atya.Governance.CodeQuality" PrivateAssets="all" />
-    <PackageReference Include="MinVer" PrivateAssets="all" Condition="'$(IsTemplateSourceRepository)' != 'true'" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="all" Condition="'$(RepositoryUrlIsConfigured)' == 'true' And '$(IsTemplateSourceRepository)' != 'true'" />
   </ItemGroup>
 
 </Project>
