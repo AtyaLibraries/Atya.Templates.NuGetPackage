@@ -8,20 +8,20 @@
 ```bash
 dotnet new install Atya.Templates.NuGetPackage
 dotnet new atya-nuget \
-  --name Contoso.Example4 \
-  --output Atya.Contoso.Example4
+  --name Foundation.Caching \
+  --output Atya.Foundation.Caching
 ```
 
-`--name Atya.Contoso.Example4` produces the same result. The generated public
-identity is `Atya.Contoso.Example4`; local artifacts use the short name
-`Example4`.
+`--name Atya.Foundation.Caching` produces the same result. The generated public
+identity is `Atya.Foundation.Caching`; local artifacts use the short name
+`Caching`.
 
 ```text
-Example4.sln
-src/Example4/Example4.csproj
-tests/Example4.UnitTests/
-samples/Example4.Samples.Console/
-benchmarks/Example4.Benchmarks/
+Caching.sln
+src/Caching/Caching.csproj
+tests/Caching.UnitTests/
+samples/Caching.Samples.Console/
+benchmarks/Caching.Benchmarks/
 ```
 
 The library project explicitly sets `PackageId`, `AssemblyName`, and
