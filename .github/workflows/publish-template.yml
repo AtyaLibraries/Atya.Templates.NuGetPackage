@@ -6,12 +6,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Optional stable SemVer version, for example 1.2.0.
+        description: Optional SemVer version, for example 1.2.0 or 1.2.0-oidc.1.
         required: false
         type: string
 
 permissions:
   contents: read
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -31,6 +32,7 @@ jobs:
       contents: write
       id-token: write
     runs-on: ubuntu-latest
+    environment: production
     timeout-minutes: 30
 
     steps:
@@ -49,8 +51,8 @@ jobs:
           $currentTag = git tag --points-at HEAD --list 'v[0-9]*.[0-9]*.[0-9]*' | Select-Object -First 1
 
           if (-not [string]::IsNullOrWhiteSpace($requestedVersion)) {
-            if ($requestedVersion -notmatch '^\d+\.\d+\.\d+$') {
-              throw "Version must use stable SemVer format: MAJOR.MINOR.PATCH."
+            if ($requestedVersion -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z]+(\.[0-9A-Za-z]+)*)?$') {
+              throw "Version must use SemVer format: MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-prerelease."
             }
 
             $version = $requestedVersion
@@ -215,22 +217,22 @@ jobs:
         with:
           subject-path: artifacts/packages/*.nupkg
 
+      - name: Log in to NuGet.org
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ArsenAsulyan
+
       - name: Publish to nuget.org
-        env:
-          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         shell: pwsh
         run: |
-          if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-            throw "The NUGET_API_KEY repository secret is required."
-          }
-
           $packages = @(Get-ChildItem -Path ./artifacts/packages -Filter "*.nupkg")
           if ($packages.Count -ne 1) {
             throw "Expected exactly one template package, found $($packages.Count)."
           }
 
           dotnet nuget push "$($packages[0].FullName)" `
-            --api-key "$env:NUGET_API_KEY" `
+            --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" `
             --source https://api.nuget.org/v3/index.json `
             --skip-duplicate
 
