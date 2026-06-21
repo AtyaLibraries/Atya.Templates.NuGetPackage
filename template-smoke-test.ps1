@@ -244,8 +244,8 @@ function Assert-GeneratedNaming {
 
     $globalJson = Get-Content -Path (Join-Path $OutputPath "global.json") -Raw | ConvertFrom-Json
     $buildSdkVersion = $globalJson.'msbuild-sdks'.'Atya.Build.Sdk'
-    if ($buildSdkVersion -ne "1.3.0") {
-        throw "Expected global.json to pin Atya.Build.Sdk 1.3.0, found '$buildSdkVersion'."
+    if ($buildSdkVersion -ne "1.3.2") {
+        throw "Expected global.json to pin Atya.Build.Sdk 1.3.2, found '$buildSdkVersion'."
     }
 
     $targetFramework = Get-MSBuildProperty -ProjectPath $packageProjectPath -PropertyName "TargetFramework"
