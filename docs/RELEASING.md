@@ -23,6 +23,18 @@ build metadata, and tags that already point at another commit.
 Use the override for coordinated releases or intentional major/minor changes.
 Do not edit project files to hardcode a package version.
 
+## API compatibility
+
+`Atya.Build.Sdk` enables package validation for packable projects. After the
+first stable NuGet release, set `PackageValidationBaselineVersion` in the
+package project to the last stable version. Bump it after each stable release.
+Future automation should derive the latest stable version from NuGet.org.
+
+For an intentional API break, use
+`/p:ApiCompatGenerateSuppressionFile=true` to generate suppressions, review the
+suppression file, and commit it only with a major-version release. Do not
+disable package validation or suppress accidental breaks.
+
 ## Template package
 
 For the template repository itself, create and push a stable tag:

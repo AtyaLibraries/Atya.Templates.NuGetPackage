@@ -71,8 +71,7 @@ dotnet test --configuration Release --no-build
 dotnet pack ./src/NuGetPackage/NuGetPackage.csproj \
   --configuration Release \
   --no-build \
-  --output artifacts/packages \
-  -p:EnablePackageValidation=true
+  --output artifacts/packages
 ```
 
 The first restore creates fresh `packages.lock.json` files for every generated
@@ -81,6 +80,10 @@ project. CI then restores in locked mode.
 CI audits dependencies, restores in locked mode, verifies formatting, builds on
 Linux and Windows, publishes TRX results, enforces 80% line coverage, validates
 the package, and uploads symbols.
+
+`Atya.Build.Sdk` enables package validation for packable projects. After the
+first stable NuGet release, set `PackageValidationBaselineVersion` to the last
+stable version and bump it after each later stable release.
 
 ## GitHub setup
 

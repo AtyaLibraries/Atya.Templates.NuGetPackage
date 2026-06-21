@@ -12,6 +12,8 @@
     <PackageTags>__PACKAGE_TAGS__</PackageTags>
     <RepositoryUrl>__REPOSITORY_URL__</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
+    <!-- Set PackageValidationBaselineVersion to the last stable package version after first stable release. -->
+    <!-- <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion> -->
     <PackageIcon>icon.png</PackageIcon>
 
     <!-- MinVer derives the version from git tags (e.g. tag `v1.2.3` -> 1.2.3). -->
