@@ -10,7 +10,7 @@
   "name": "Atya NuGet Package",
   "shortName": "atya-nuget",
   "preferNameDirectory": true,
-  "description": "Creates a production-ready Atya.{Area}.{Name} .NET package repository with source, tests, samples, benchmarks, central package management, and GitHub CI/release workflows.",
+  "description": "Creates a production-ready Atya.{Area}.{Name} .NET package repository with source, tests, samples, benchmarks, central package management, and GitHub CI/publish workflows.",
   "primaryOutputs": [
     {
       "path": "NuGetPackage.sln"
@@ -39,13 +39,20 @@
         ".github/CODEOWNERS",
         ".github/ISSUE_TEMPLATE/**",
         ".github/pull_request_template.md",
+        ".github/release.yml",
+        ".github/workflows/delete-merged-branch.yml",
         "README.md",
+        "CHANGELOG.md",
+        "docs/RELEASING.md",
+        "nuget.config",
         "template-smoke-test.ps1",
         "Atya.Templates.NuGetPackage.csproj",
         "PACKAGE_README.md",
         "icon.png",
         "packages.lock.json",
         "**/packages.lock.json",
+        "src/NuGetPackage/icon.png",
+        "src/NuGetPackage/Properties/AssemblyInfo.cs",
         ".github/workflows/test-template.yml",
         ".github/workflows/publish-template.yml",
         "NuGetPackage.sln",
@@ -182,7 +189,7 @@
       "type": "parameter",
       "datatype": "bool",
       "displayName": "Include GitHub configuration",
-      "description": "Adds .github/ folder with CI/release workflows and Renovate.",
+      "description": "Adds .github/ folder with CI, dependency-review, publish-dispatch workflows, and Renovate.",
       "defaultValue": "true"
     },
     "skipRestore": {

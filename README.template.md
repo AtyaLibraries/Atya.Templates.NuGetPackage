@@ -17,8 +17,7 @@ __PACKAGE_DESCRIPTION__
 |-- tests/NuGetPackage.UnitTests/
 |-- samples/NuGetPackage.Samples.Console/
 |-- benchmarks/NuGetPackage.Benchmarks/       # Optional
-|-- docs/RELEASING.md
-|-- .github/                                  # Optional
+|-- .github/workflows/                        # Optional
 `-- Directory.Packages.props
 ```
 
@@ -30,8 +29,8 @@ This repository uses two related names:
   `PackageId`, `AssemblyName`, `RootNamespace`, C# namespaces, NuGet metadata,
   the package README title, and the repository URL.
 - `SHORT = NuGetPackage` is the local artifact name used by the solution,
-  project files, folders, project references, workflow paths, and test friend
-  assembly name.
+  project files, folders, project references, workflow paths, and test assembly
+  name.
 
 The template accepts either `--name Foundation.Caching` or
 `--name Atya.Foundation.Caching`. Both produce `FULL_ID =
@@ -52,7 +51,7 @@ The build fails packable projects whose `PackageId` is invalid or whose
 | Symbol | Default | Result |
 | --- | --- | --- |
 | `includeBenchmarks` | `true` | Includes the benchmark project. |
-| `includeGitHub` | `true` | Includes GitHub workflows, release metadata, and Renovate configuration. |
+| `includeGitHub` | `true` | Includes CI, dependency review, tag-publish dispatch, and Renovate configuration. |
 
 Every generated repository references `Atya.Foundation.Guards` at runtime and
 uses `Atya.Build.Sdk` for shared build, analyzer, versioning, SourceLink, and
@@ -77,9 +76,10 @@ dotnet pack ./src/NuGetPackage/NuGetPackage.csproj \
 The first restore creates fresh `packages.lock.json` files for every generated
 project. CI then restores in locked mode.
 
-CI audits dependencies, restores in locked mode, verifies formatting, builds on
-Linux and Windows, publishes TRX results, enforces 80% line coverage, validates
-the package, and uploads symbols.
+CI audits NuGet dependencies, restores in locked mode, verifies formatting,
+builds on Linux and Windows, publishes TRX results, enforces 80% line coverage,
+validates the package, and uploads symbols. Dependency Review runs on pull
+requests through the organization reusable workflow.
 
 `Atya.Build.Sdk` enables package validation for packable projects. After the
 first stable NuGet release, set `PackageValidationBaselineVersion` to the last
@@ -94,15 +94,19 @@ through pull requests with the required `ci / *` checks. Only `development`
 opens release pull requests to `master`; that promotion uses a merge commit so
 the long-lived branches retain shared ancestry.
 
-Set these repository values before publishing:
+Generated repositories publish without per-repository NuGet API keys. Pushing a
+`vMAJOR.MINOR.PATCH` tag runs `publish-nuget.yml`, which dispatches a
+`publish-package` request to `AtyaLibraries/publisher`. The central publisher is
+the only NuGet.org publishing chokepoint and owns trusted publishing, signing,
+and NuGet.org release credentials.
 
-- Secret `NUGET_API_KEY`
-- Secret `NUGET_SIGN_CERT_BASE64`
-- Secret `NUGET_SIGN_CERT_PASSWORD`
-- Variable `REQUIRE_SIGNED_PACKAGES` (defaults to `true`; set `false` only for an explicit unsigned-publishing exception)
+Do not add NuGet.org API-key secrets to generated repositories. The only
+repository-side publish dependency is access to the organization dispatch
+credential used by `publish-nuget.yml`.
 
 ## Versioning and releases
 
-MinVer derives package versions from `vMAJOR.MINOR.PATCH` tags. The publish
-workflow supports an explicit stable SemVer input for a controlled manual
-release. See `docs/RELEASING.md` for the complete publish and recovery process.
+MinVer derives package versions from `vMAJOR.MINOR.PATCH` tags. Release by
+merging `development` to `master` with a merge commit, then pushing the stable
+version tag. The generated publish workflow is tag-only and dispatches the
+central publisher; it does not pack or push to NuGet.org directly.
