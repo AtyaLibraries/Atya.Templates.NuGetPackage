@@ -146,25 +146,20 @@ function Assert-GeneratedNaming {
 
     $expectedFiles = @(
         "$expectedShortName.sln",
-        "CHANGELOG.md",
         "Directory.Packages.props",
-        "docs/RELEASING.md",
         "global.json",
-        "nuget.config",
         "README.md",
         "samples/$expectedShortName.Samples.Console/$expectedShortName.Samples.Console.csproj",
         "src/$expectedShortName/$expectedShortName.cs",
         "src/$expectedShortName/$expectedShortName.csproj",
-        "src/$expectedShortName/Properties/AssemblyInfo.cs",
-        "src/$expectedShortName/icon.png",
         "tests/$expectedShortName.UnitTests/$expectedShortName.UnitTests.csproj"
     )
 
     if ($Scenario.ExpectGitHub) {
         $expectedFiles += @(
             "renovate.json",
-            ".github/release.yml",
             ".github/workflows/ci.yml",
+            ".github/workflows/dependency-review.yml",
             ".github/workflows/publish-nuget.yml"
         )
     }
@@ -195,12 +190,21 @@ function Assert-GeneratedNaming {
         throw "Generated output contains community-health files that should be inherited from AtyaLibraries/.github:`n$($inheritedCommunityFiles -join "`n")"
     }
 
-    $retiredBootstrapFiles = @("bootstrap.ps1") | Where-Object {
+    $retiredBootstrapFiles = @(
+        "bootstrap.ps1",
+        "CHANGELOG.md",
+        "docs/RELEASING.md",
+        "nuget.config",
+        ".github/release.yml",
+        ".github/workflows/delete-merged-branch.yml",
+        "src/$expectedShortName/Properties/AssemblyInfo.cs",
+        "src/$expectedShortName/icon.png"
+    ) | Where-Object {
         Test-Path (Join-Path $OutputPath $_)
     }
 
     if ($retiredBootstrapFiles) {
-        throw "Generated output contains retired bootstrap files:`n$($retiredBootstrapFiles -join "`n")"
+        throw "Generated output contains retired generated files:`n$($retiredBootstrapFiles -join "`n")"
     }
 
     $removedBuildFiles = @("Directory.Build.props", "Directory.Build.targets") | Where-Object {
@@ -227,6 +231,7 @@ function Assert-GeneratedNaming {
     }
 
     $packageProjectPath = Join-Path $OutputPath "src/$expectedShortName/$expectedShortName.csproj"
+    $packageProjectText = Get-Content -Path $packageProjectPath -Raw
     [xml]$packageProject = Get-Content -Path $packageProjectPath
     $packageProjectSdk = $packageProject.DocumentElement.GetAttribute("Sdk")
     if ($packageProjectSdk -ne "Atya.Build.Sdk") {
@@ -240,6 +245,14 @@ function Assert-GeneratedNaming {
         if ($actualValue -ne $expectedPackageId) {
             throw "Expected $propertyName '$expectedPackageId', found '$actualValue'."
         }
+    }
+
+    if ($propertyGroup.SelectSingleNode("PackageIcon")) {
+        throw "Generated package project should not define a per-repository PackageIcon."
+    }
+
+    if ($packageProjectText -notmatch "PackageValidationBaselineVersion") {
+        throw "Generated package project is missing PackageValidationBaselineVersion guidance."
     }
 
     $globalJson = Get-Content -Path (Join-Path $OutputPath "global.json") -Raw | ConvertFrom-Json
@@ -288,11 +301,6 @@ function Assert-GeneratedNaming {
         throw "Generated test project should not directly reference Atya.Governance.Testing."
     }
 
-    $assemblyInfo = Get-Content -Path (Join-Path $OutputPath "src/$expectedShortName/Properties/AssemblyInfo.cs") -Raw
-    if ($assemblyInfo -notmatch [regex]::Escape("InternalsVisibleTo(`"$expectedShortName.UnitTests`")")) {
-        throw "InternalsVisibleTo does not reference '$expectedShortName.UnitTests'."
-    }
-
     $solution = Get-Content -Path (Join-Path $OutputPath "$expectedShortName.sln") -Raw
     foreach ($projectName in @(
         $expectedShortName,
@@ -329,6 +337,30 @@ function Assert-GeneratedNaming {
         )) {
             if ($ciWorkflow -notmatch [regex]::Escape($expectedPath)) {
                 throw "Generated CI workflow is missing '$expectedPath'."
+            }
+        }
+
+        $dependencyReviewWorkflow = Get-Content -Path (Join-Path $OutputPath ".github/workflows/dependency-review.yml") -Raw
+        if ($dependencyReviewWorkflow -notmatch [regex]::Escape("uses: AtyaLibraries/github-workflows/.github/workflows/dependency-review.yml@v1")) {
+            throw "Generated dependency-review workflow does not call the organization reusable workflow."
+        }
+
+        $publishWorkflow = Get-Content -Path (Join-Path $OutputPath ".github/workflows/publish-nuget.yml") -Raw
+        foreach ($expectedPublishToken in @(
+            "tags:",
+            "SOURCE_SOLUTION: ./$expectedShortName.sln",
+            "SOURCE_PACKAGE_PROJECT: ./src/$expectedShortName/$expectedShortName.csproj",
+            "repo: 'publisher'",
+            "event_type: 'publish-package'"
+        )) {
+            if ($publishWorkflow -notmatch [regex]::Escape($expectedPublishToken)) {
+                throw "Generated publish workflow is missing '$expectedPublishToken'."
+            }
+        }
+
+        foreach ($forbiddenPublishToken in @("workflow_dispatch", "NUGET_API_KEY", "dotnet nuget push")) {
+            if ($publishWorkflow -match [regex]::Escape($forbiddenPublishToken)) {
+                throw "Generated publish workflow should be tag-only dispatch and must not contain '$forbiddenPublishToken'."
             }
         }
     }
@@ -374,6 +406,11 @@ function Invoke-GeneratedLifecycle {
         $packageLock = Get-Content -Path "./src/$expectedShortName/packages.lock.json" -Raw
         if ($packageLock -notmatch '"MinVer"' -or $packageLock -notmatch '"Microsoft.SourceLink.GitHub"') {
             throw "Generated package lock file is missing MinVer or Microsoft.SourceLink.GitHub."
+        }
+
+        $testLock = Get-Content -Path "./tests/$expectedShortName.UnitTests/packages.lock.json" -Raw
+        if ($testLock -notmatch '"xunit.v3"') {
+            throw "Generated test lock file is missing xUnit v3."
         }
 
         Invoke-NativeCommand -Description "$($Scenario.Name) Release build" -Command {

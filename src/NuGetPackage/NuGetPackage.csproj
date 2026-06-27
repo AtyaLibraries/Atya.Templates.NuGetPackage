@@ -14,7 +14,6 @@
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
     <!-- Set PackageValidationBaselineVersion to the last stable package version after first stable release. -->
     <!-- <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion> -->
-    <PackageIcon>icon.png</PackageIcon>
 
     <!-- MinVer derives the version from git tags (e.g. tag `v1.2.3` -> 1.2.3). -->
     <MinVerTagPrefix>v</MinVerTagPrefix>
@@ -24,7 +23,6 @@
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
-    <None Include="icon.png" Pack="true" PackagePath="\" />
     <None Include="..\..\LICENSE" Pack="true" PackagePath="\" Visible="false" />
   </ItemGroup>
 
