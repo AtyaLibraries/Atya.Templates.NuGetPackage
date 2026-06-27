@@ -10,9 +10,9 @@
       },
       "Atya.Governance.CodeQuality": {
         "type": "Direct",
-        "requested": "[1.0.0, )",
-        "resolved": "1.0.0",
-        "contentHash": "NXYX/0pQhIkzX9KB/p+Np7H+6Z+qgyElRCGGQ20/HX1G6Vnf6Y7KNkqGlVIWiAcjcY3SEV/eP3/Vrl+bjve8Ww=="
+        "requested": "[1.1.0, )",
+        "resolved": "1.1.0",
+        "contentHash": "vWSyW0u93lQTDN32fJmPBL+8vPcPCUxkM5nJ+lKFlAjrA0KhDQN8Gg/CQwxrUgVQ4mnDy8oIo9wrA0DXLqFykg=="
       },
       "MinVer": {
         "type": "Direct",

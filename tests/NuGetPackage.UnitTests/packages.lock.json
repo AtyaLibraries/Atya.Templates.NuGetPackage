@@ -4,9 +4,9 @@
     "net10.0": {
       "Atya.Governance.Testing": {
         "type": "Direct",
-        "requested": "[1.0.0, )",
-        "resolved": "1.0.0",
-        "contentHash": "ji59qiODBvtHjKHgMMwQzSIHCJnEnFC/AITfC1CB+vf/elx04202Edg2nxdxDAlhOmMINWL5DV6zBEsaJTJYeg=="
+        "requested": "[1.1.0, )",
+        "resolved": "1.1.0",
+        "contentHash": "Ka6Kq9/HQlxVLUWvgxVXjT07FxwKAOWNcLmoPPkOGm9i27d7tOIRRrmK2MlKr8Kfi5x2EGYz56E21iVIytYMUw=="
       },
       "coverlet.collector": {
         "type": "Direct",
