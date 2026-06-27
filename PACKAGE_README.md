@@ -50,7 +50,7 @@ test-stack wiring.
 | Option | Default | Behavior |
 | --- | --- | --- |
 | `--include-benchmarks` | `true` | Includes the BenchmarkDotNet project and solution wiring. |
-| `--include-github` | `true` | Includes GitHub workflows, release metadata, and Renovate configuration. |
+| `--include-github` | `true` | Includes CI, dependency review, tag-publish dispatch, and Renovate configuration. |
 
 `Atya.Foundation.Guards` is the unconditional runtime baseline. `Atya.Build.Sdk`
 supplies the shared CodeQuality, Testing, MinVer, and SourceLink wiring. These
@@ -71,15 +71,13 @@ dotnet new atya-nuget \
 - A build and pack guard that rejects nonconforming package IDs and requires
   `AssemblyName` and `RootNamespace` to equal `PackageId`, unless
   `SkipPackageNamingValidation=true` is set for an explicit exception.
-- Signed publishing by default when GitHub publishing is enabled.
+- Keyless tag-based publishing through the central `AtyaLibraries/publisher`
+  workflow.
 - Rulesets-based protection for `development` and `master`.
-
-The template includes a neutral package icon. Replace
-`src/<SHORT>/icon.png` with the final 128x128 package artwork before the
-first public release.
 
 ## Versioning
 
 MinVer derives versions from `vMAJOR.MINOR.PATCH` tags. Generated repositories
-also support an explicit stable SemVer override through the Publish NuGet
-workflow dispatch input.
+publish without repo-local NuGet API keys: pushing a `v*` tag dispatches the
+central publisher, which owns NuGet.org trusted publishing and release
+credentials.

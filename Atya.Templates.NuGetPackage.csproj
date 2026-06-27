@@ -17,7 +17,6 @@
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>PACKAGE_README.md</PackageReadmeFile>
-    <PackageIcon>icon.png</PackageIcon>
     <PackageTags>dotnet;template;nuget;package;net10</PackageTags>
     <IsPackable>true</IsPackable>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -42,7 +41,6 @@
     <Content Include="**/*"
              Exclude="bin/**;obj/**;artifacts/**;**/bin/**;**/obj/**;**/artifacts/**;.git;.git/**;.vs;.vs/**;.idea;.idea/**;.tmp;.tmp/**;packages.lock.json;PACKAGE_README.md;icon.png;Atya.Templates.NuGetPackage.csproj;template-smoke-test.ps1;.github/workflows/test-template.yml;.github/workflows/publish-template.yml" />
     <None Include="PACKAGE_README.md" Pack="true" PackagePath="\" />
-    <None Include="src\NuGetPackage\icon.png" Pack="true" PackagePath="icon.png" />
   </ItemGroup>
 
   <ItemGroup>
