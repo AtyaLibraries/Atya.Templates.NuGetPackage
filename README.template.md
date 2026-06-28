@@ -1,112 +1,116 @@
-# Atya.Templates.NuGetPackage
+<!-- After adding real code, run the Atya per-repo README Standardization prompt to fill real examples. -->
+<h1 align="center">Atya.Templates.NuGetPackage</h1>
 
-__PACKAGE_DESCRIPTION__
+<p align="center"><i>__PACKAGE_DESCRIPTION__</i></p>
 
-| | |
-| --- | --- |
-| Repository | [__REPOSITORY_URL__](__REPOSITORY_URL__) |
-| NuGet | `Atya.Templates.NuGetPackage` |
-| License | MIT |
+<p align="center">
+  <a href="https://www.nuget.org/packages/Atya.Templates.NuGetPackage"><img src="https://img.shields.io/nuget/v/Atya.Templates.NuGetPackage?style=for-the-badge&logo=nuget&logoColor=white&label=NuGet&color=512BD4" alt="NuGet Version"></a>
+  <a href="https://www.nuget.org/packages/Atya.Templates.NuGetPackage"><img src="https://img.shields.io/nuget/dt/Atya.Templates.NuGetPackage?style=for-the-badge&logo=nuget&logoColor=white&label=Downloads&color=512BD4" alt="NuGet Downloads"></a>
+  <img src="https://img.shields.io/badge/.NET_10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt="Target Framework">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/__GITHUB_OWNER__/Atya.Templates.NuGetPackage?style=for-the-badge&color=512BD4" alt="License"></a>
+  <a href="https://github.com/__GITHUB_OWNER__/Atya.Templates.NuGetPackage/actions"><img src="https://img.shields.io/github/actions/workflow/status/__GITHUB_OWNER__/Atya.Templates.NuGetPackage/ci.yml?branch=development&style=for-the-badge&logo=githubactions&logoColor=white&label=Build" alt="Build"></a>
+  <a href="https://github.com/__GITHUB_OWNER__/Atya.Templates.NuGetPackage"><img src="https://img.shields.io/github/stars/__GITHUB_OWNER__/Atya.Templates.NuGetPackage?style=for-the-badge&logo=github&logoColor=white&color=512BD4" alt="Stars"></a>
+</p>
 
-## Layout
+---
+
+## 📖 Overview
+
+__PACKAGE_DESCRIPTION__ <!-- TODO: expand to 2-4 sentences once the package has real scope. -->
+
+## ✨ Features
+
+- **Focused API** — Replace with the package's primary capability. <!-- TODO -->
+- **Modern .NET integration** — Replace with the package's runtime or framework fit. <!-- TODO -->
+- **Production-ready packaging** — Replace with the package's reliability or operations story. <!-- TODO -->
+
+## 📦 Installation
+
+**.NET CLI**
+```bash
+dotnet add package Atya.Templates.NuGetPackage
+```
+
+**Package Manager**
+```powershell
+Install-Package Atya.Templates.NuGetPackage
+```
+
+**PackageReference**
+```xml
+<PackageReference Include="Atya.Templates.NuGetPackage" Version="<latest-stable>" />
+```
+
+## 🚀 Quick Start
+
+<!-- TODO: replace this scaffold example with your package's real API. -->
+```csharp
+using Atya.Templates.NuGetPackage;
+
+var assembly = typeof(__PACKAGE_MARKER_NAME__Marker).Assembly;
+Console.WriteLine($"{assembly.GetName().Name} is ready.");
+```
+
+## 📚 Usage
+
+Add real usage examples once the package API is implemented. <!-- TODO -->
+
+## 🗂️ Project Structure
+
+| Icon | Meaning |
+|------|---------|
+| 📦 | Solution / repo root (`.sln`) |
+| 📂 `src` | Library source code (the published package) |
+| 🧪 `tests` | Unit & integration tests |
+| 🎯 `samples` | Runnable usage samples |
+| ⚡ `benchmarks` | Performance benchmarks |
+| ⚙️ `.github` | CI/CD & repo config |
+| 📄 | Notable single file |
 
 ```text
-.
-|-- NuGetPackage.sln
-|-- src/NuGetPackage/NuGetPackage.csproj
-|-- tests/NuGetPackage.UnitTests/
-|-- samples/NuGetPackage.Samples.Console/
-|-- benchmarks/NuGetPackage.Benchmarks/       # Optional
-|-- .github/workflows/                        # Optional
-`-- Directory.Packages.props
+📦 Atya.Templates.NuGetPackage
+├── 📂 src
+│   └── 📄 NuGetPackage.csproj      # the published package
+├── 🧪 tests
+│   └── 📄 NuGetPackage.UnitTests.csproj
+├── 🎯 samples
+│   └── 📄 NuGetPackage.Samples.Console.csproj
+├── ⚡ benchmarks
+│   └── 📄 NuGetPackage.Benchmarks.csproj
+├── ⚙️ .github/workflows
+├── 📄 NuGetPackage.sln
+├── 📄 README.md
+└── 📄 LICENSE
 ```
 
-## Package naming
+## 🎯 Compatibility
 
-This repository uses two related names:
+Targets `net10.0`.
 
-- `FULL_ID = Atya.Templates.NuGetPackage` is the public identity used by
-  `PackageId`, `AssemblyName`, `RootNamespace`, C# namespaces, NuGet metadata,
-  the package README title, and the repository URL.
-- `SHORT = NuGetPackage` is the local artifact name used by the solution,
-  project files, folders, project references, workflow paths, and test assembly
-  name.
-
-The template accepts either `--name Foundation.Caching` or
-`--name Atya.Foundation.Caching`. Both produce `FULL_ID =
-Atya.Foundation.Caching` and `SHORT = Caching`.
-
-Use `{Area}.{Name}` after the optional `Atya.` prefix. Areas are controlled
-vocabulary; the initial approved values are `Foundation`, `Governance`, and
-`Templates`. Adding an area requires a deliberate repository-wide naming
-decision. Companion suffixes such as `.Analyzers` or `.Abstractions` remain
-valid.
-
-The build fails packable projects whose `PackageId` is invalid or whose
-`AssemblyName` or `RootNamespace` differs from `PackageId`. Set
-`SkipPackageNamingValidation=true` only for an explicit exception.
-
-## Template options
-
-| Symbol | Default | Result |
-| --- | --- | --- |
-| `includeBenchmarks` | `true` | Includes the benchmark project. |
-| `includeGitHub` | `true` | Includes CI, dependency review, tag-publish dispatch, and Renovate configuration. |
-
-Every generated repository references `Atya.Foundation.Guards` at runtime and
-uses `Atya.Build.Sdk` for shared build, analyzer, versioning, SourceLink, and
-test-stack wiring. These baseline choices cannot be disabled with template
-options.
-
-All generated projects target `net10.0` through `Atya.Build.Sdk`.
-
-## Development
+## 🧪 Testing
 
 ```bash
-dotnet restore
-dotnet format --verify-no-changes
-dotnet build --configuration Release --no-restore
-dotnet test --configuration Release --no-build
-dotnet pack ./src/NuGetPackage/NuGetPackage.csproj \
-  --configuration Release \
-  --no-build \
-  --output artifacts/packages
+dotnet test
 ```
 
-The first restore creates fresh `packages.lock.json` files for every generated
-project. CI then restores in locked mode.
+## ⚡ Benchmarks
 
-CI audits NuGet dependencies, restores in locked mode, verifies formatting,
-builds on Linux and Windows, publishes TRX results, enforces 80% line coverage,
-validates the package, and uploads symbols. Dependency Review runs on pull
-requests through the organization reusable workflow.
+Performance benchmarks live in `benchmarks/`. Run with `dotnet run -c Release` from the benchmark project.
 
-`Atya.Build.Sdk` enables package validation for packable projects. After the
-first stable NuGet release, set `PackageValidationBaselineVersion` to the last
-stable version and bump it after each later stable release.
+## 🤝 Contributing
 
-## GitHub setup
+Contributions are welcome! Please open an issue or pull request on [GitHub](https://github.com/__GITHUB_OWNER__/Atya.Templates.NuGetPackage).
 
-When `includeGitHub=true`, create the repository with `development` as the
-default branch and set the `atya-managed=true` custom property so the
-organization rulesets apply. Short-lived branches merge into `development`
-through pull requests with the required `ci / *` checks. Only `development`
-opens release pull requests to `master`; that promotion uses a merge commit so
-the long-lived branches retain shared ancestry.
+## 📄 License
 
-Generated repositories publish without per-repository NuGet API keys. Pushing a
-`vMAJOR.MINOR.PATCH` tag runs `publish-nuget.yml`, which dispatches a
-`publish-package` request to `AtyaLibraries/publisher`. The central publisher is
-the only NuGet.org publishing chokepoint and owns trusted publishing, signing,
-and NuGet.org release credentials.
+Released under the **MIT** license. See [LICENSE](LICENSE) for details.
 
-Do not add NuGet.org API-key secrets to generated repositories. The only
-repository-side publish dependency is access to the organization dispatch
-credential used by `publish-nuget.yml`.
+---
 
-## Versioning and releases
+## 🏛️ About Atya Libraries
 
-MinVer derives package versions from `vMAJOR.MINOR.PATCH` tags. Release by
-merging `development` to `master` with a merge commit, then pushing the stable
-version tag. The generated publish workflow is tag-only and dispatches the
-central publisher; it does not pack or push to NuGet.org directly.
+`Atya.Templates.NuGetPackage` is part of **[Atya Libraries](https://github.com/AtyaLibraries)** — a family of focused, modern .NET libraries published under the reserved **`Atya.*`** prefix on NuGet. Every package shares the same principles: a small, clear public API, full test coverage, and consistent documentation.
+
+> 🔎 Browse the full collection on [GitHub](https://github.com/AtyaLibraries) and [NuGet](https://www.nuget.org/profiles/ArsenAsulyan).
+
+<p align="center"><sub>Made with 💜 .NET · © __COPYRIGHT_YEAR__ Atya Libraries</sub></p>
