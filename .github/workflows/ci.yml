@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   ci:
-    uses: AtyaLibraries/github-workflows/.github/workflows/dotnet-package-ci.yml@v1
+    uses: AtyaLibraries/github-workflows/.github/workflows/dotnet-package-ci.yml@8b4d3932f62b03a9e191dca852282b3ce8a4f826 # v1
     with:
       solution: ./NuGetPackage.sln
       test-project: ./tests/NuGetPackage.UnitTests/NuGetPackage.UnitTests.csproj
