@@ -66,7 +66,7 @@ dotnet new atya-nuget \
 ## Generated safeguards
 
 - NuGet auditing at `low` severity or higher and lock-file enforcement in CI.
-- Formatting, build, xUnit tests, TRX reporting, and an 80% line coverage gate.
+- Formatting, build, xUnit tests, TRX reporting, coverage reports, and an opt-in line/branch coverage gate.
 - Package validation, symbols, SourceLink, SBOM generation, and provenance attestation.
 - A build and pack guard that rejects nonconforming package IDs and requires
   `AssemblyName` and `RootNamespace` to equal `PackageId`, unless
