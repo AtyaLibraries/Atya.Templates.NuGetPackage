@@ -13,11 +13,12 @@ permissions:
 
 jobs:
   ci:
-    uses: AtyaLibraries/github-workflows/.github/workflows/dotnet-package-ci.yml@v1
+    uses: AtyaLibraries/github-workflows/.github/workflows/dotnet-package-ci.yml@950f73c1f1fc997bc2d5c83d68c1729f748a0f77
     with:
       solution: ./NuGetPackage.sln
       test-project: ./tests/NuGetPackage.UnitTests/NuGetPackage.UnitTests.csproj
-      package-project: ./src/NuGetPackage/NuGetPackage.csproj
+      package-project: ./Atya.Templates.NuGetPackage.csproj
+      pack-style: template
       allow-empty-coverage: true # scaffold has no covered code yet; set false once you add some
       # allow-empty-coverage: false      # flip to false after the first real tests land
       # fail-on-coverage: true
