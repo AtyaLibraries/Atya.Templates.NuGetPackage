@@ -17,8 +17,7 @@ jobs:
     with:
       solution: ./NuGetPackage.sln
       test-project: ./tests/NuGetPackage.UnitTests/NuGetPackage.UnitTests.csproj
-      package-project: ./Atya.Templates.NuGetPackage.csproj
-      pack-style: template
+      package-project: ./src/NuGetPackage/NuGetPackage.csproj
       allow-empty-coverage: true # scaffold has no covered code yet; set false once you add some
       # allow-empty-coverage: false      # flip to false after the first real tests land
       # fail-on-coverage: true
