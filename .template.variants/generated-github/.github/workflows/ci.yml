@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [development, master]
+  pull_request:
+    branches: [development, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+jobs:
+  ci:
+    uses: AtyaLibraries/github-workflows/.github/workflows/dotnet-package-ci.yml@950f73c1f1fc997bc2d5c83d68c1729f748a0f77
+    with:
+      solution: ./NuGetPackage.sln
+      test-project: ./tests/NuGetPackage.UnitTests/NuGetPackage.UnitTests.csproj
+      package-project: ./src/NuGetPackage/NuGetPackage.csproj
+      allow-empty-coverage: true # scaffold has no covered code yet; set false once you add some
+      # allow-empty-coverage: false      # flip to false after the first real tests land
+      # fail-on-coverage: true
+      # coverage-line-min: 90
+      # coverage-branch-min: 80

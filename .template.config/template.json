@@ -105,6 +105,18 @@
           ]
         }
       ]
+    },
+    {
+      "source": "./.template.variants/generated-github/",
+      "target": "./",
+      "modifiers": [
+        {
+          "condition": "(!includeGitHub)",
+          "exclude": [
+            "**"
+          ]
+        }
+      ]
     }
   ],
   "symbols": {
