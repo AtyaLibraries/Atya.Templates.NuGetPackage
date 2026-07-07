@@ -18,8 +18,6 @@ jobs:
       solution: ./NuGetPackage.sln
       test-project: ./tests/NuGetPackage.UnitTests/NuGetPackage.UnitTests.csproj
       package-project: ./src/NuGetPackage/NuGetPackage.csproj
-      allow-empty-coverage: true # scaffold has no covered code yet; set false once you add some
-      # allow-empty-coverage: false      # flip to false after the first real tests land
-      # fail-on-coverage: true
-      # coverage-line-min: 90
-      # coverage-branch-min: 80
+      fail-on-coverage: true
+      coverage-line-min: 90
+      coverage-branch-min: 80
