@@ -17,8 +17,7 @@ jobs:
     with:
       solution: ./NuGetPackage.sln
       test-project: ./tests/NuGetPackage.UnitTests/NuGetPackage.UnitTests.csproj
-      package-project: ./Atya.Templates.NuGetPackage.csproj
-      pack-style: template
+      package-project: ./src/NuGetPackage/NuGetPackage.csproj
       fail-on-coverage: true
       coverage-line-min: 90
       coverage-branch-min: 80
