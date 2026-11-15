@@ -16,6 +16,6 @@ permissions:
 
 jobs:
   analyze:
-    uses: AtyaLibraries/github-workflows/.github/workflows/codeql-csharp.yml@v1
+    uses: AtyaLibraries/github-workflows/.github/workflows/codeql-csharp.yml@1af7a8da0d8b01f11ab5437c0b2db0896b14e52b # v1.1.0
     with:
       solution: ./NuGetPackage.sln

@@ -341,7 +341,7 @@ function Assert-GeneratedNaming {
         }
 
         $dependencyReviewWorkflow = Get-Content -Path (Join-Path $OutputPath ".github/workflows/dependency-review.yml") -Raw
-        if ($dependencyReviewWorkflow -notmatch [regex]::Escape("uses: AtyaLibraries/github-workflows/.github/workflows/dependency-review.yml@v1")) {
+        if ($dependencyReviewWorkflow -notmatch "uses: AtyaLibraries/github-workflows/\.github/workflows/dependency-review\.yml@[0-9a-f]{40} # v\d+(\.\d+){0,2}\b") {
             throw "Generated dependency-review workflow does not call the organization reusable workflow."
         }
 
