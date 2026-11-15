@@ -10,4 +10,4 @@ permissions:
 
 jobs:
   dependency-review:
-    uses: AtyaLibraries/github-workflows/.github/workflows/dependency-review.yml@v1
+    uses: AtyaLibraries/github-workflows/.github/workflows/dependency-review.yml@1af7a8da0d8b01f11ab5437c0b2db0896b14e52b # v1.1.0
