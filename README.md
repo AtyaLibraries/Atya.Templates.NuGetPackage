@@ -24,7 +24,6 @@ samples/Caching.Samples.Console/
 benchmarks/Caching.Benchmarks/
 .github/workflows/ci.yml
 .github/workflows/dependency-review.yml
-.github/workflows/publish-nuget.yml
 ```
 
 The library project explicitly sets `PackageId`, `AssemblyName`, and
@@ -32,8 +31,9 @@ The library project explicitly sets `PackageId`, `AssemblyName`, and
 repository URL also use that identity. Tests, samples, benchmarks, project
 paths, and workflow paths use the short name.
 
-Generated repositories publish keylessly through the central publisher. Pushing
-a `v*` tag dispatches `AtyaLibraries/publisher`; generated repositories do not
+Generated repositories publish keylessly through the central publisher. A
+maintainer starts a release by running `publish.yml` in `AtyaLibraries/publisher`
+with `workflow_dispatch`; generated repositories carry no release-trigger workflow and do not
 carry NuGet.org API-key secrets, local release notes config, local release docs,
 per-repo icons, or manual assembly metadata files.
 

@@ -159,8 +159,7 @@ function Assert-GeneratedNaming {
         $expectedFiles += @(
             "renovate.json",
             ".github/workflows/ci.yml",
-            ".github/workflows/dependency-review.yml",
-            ".github/workflows/publish-nuget.yml"
+            ".github/workflows/dependency-review.yml"
         )
     }
 
@@ -345,22 +344,16 @@ function Assert-GeneratedNaming {
             throw "Generated dependency-review workflow does not call the organization reusable workflow."
         }
 
-        $publishWorkflow = Get-Content -Path (Join-Path $OutputPath ".github/workflows/publish-nuget.yml") -Raw
-        foreach ($expectedPublishToken in @(
-            "tags:",
-            "SOURCE_SOLUTION: ./$expectedShortName.sln",
-            "SOURCE_PACKAGE_PROJECT: ./src/$expectedShortName/$expectedShortName.csproj",
-            "repo: 'publisher'",
-            "event_type: 'publish-package'"
-        )) {
-            if ($publishWorkflow -notmatch [regex]::Escape($expectedPublishToken)) {
-                throw "Generated publish workflow is missing '$expectedPublishToken'."
-            }
+        $senderPath = Join-Path $OutputPath ".github/workflows/publish-nuget.yml"
+        if (Test-Path -LiteralPath $senderPath) {
+            throw "Generated repository must not contain the release-trigger workflow publish-nuget.yml."
         }
 
-        foreach ($forbiddenPublishToken in @("workflow_dispatch", "NUGET_API_KEY", "dotnet nuget push")) {
-            if ($publishWorkflow -match [regex]::Escape($forbiddenPublishToken)) {
-                throw "Generated publish workflow should be tag-only dispatch and must not contain '$forbiddenPublishToken'."
+        foreach ($forbiddenSenderToken in @("PUBLISHER_DISPATCH_TOKEN", "createDispatchEvent", "repository_dispatch", "publish-package", "NUGET_API_KEY", "dotnet nuget push")) {
+            $hits = Get-ChildItem -Path (Join-Path $OutputPath ".github") -Recurse -File |
+                Select-String -SimpleMatch -Pattern $forbiddenSenderToken
+            if ($hits) {
+                throw "Generated .github content must not contain '$forbiddenSenderToken'."
             }
         }
     }
