@@ -9,11 +9,18 @@ namespace Atya.Templates.NuGetPackage.Benchmarks;
 //   * Add a realistic [Benchmark(Baseline = true)] alternative where a comparison teaches something.
 //   * Build fixtures in [GlobalSetup]; return results so the JIT can't eliminate the work.
 //   * Measure the success/hot path — not exception-throwing paths.
+/// <summary>
+/// Starter benchmarks for the generated package.
+/// </summary>
 [MemoryDiagnoser]
 public class StarterBenchmarks
 {
     private readonly string _value = "Atya.Templates.NuGetPackage";
 
+    /// <summary>
+    /// Reads the length of a representative value.
+    /// </summary>
+    /// <returns>The value length.</returns>
     [Benchmark]
     public int ReadStarterValueLength() => _value.Length;
 }
