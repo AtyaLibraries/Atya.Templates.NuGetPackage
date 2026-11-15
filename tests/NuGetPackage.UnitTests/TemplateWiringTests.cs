@@ -10,4 +10,10 @@ public sealed class TemplateWiringTests
         assembly.Should().NotBeNull();
         assembly.GetName().Name.Should().Be("Atya.Templates.NuGetPackage");
     }
+
+    [Fact]
+    public void Marker_Exposes_Package_Id()
+    {
+        __PACKAGE_MARKER_NAME__Marker.PackageId.Should().Be("Atya.Templates.NuGetPackage");
+    }
 }
