@@ -201,7 +201,7 @@
       "type": "parameter",
       "datatype": "bool",
       "displayName": "Include GitHub configuration",
-      "description": "Adds .github/ folder with CI, dependency-review, publish-dispatch workflows, and Renovate.",
+      "description": "Adds .github/ folder with CI, dependency-review workflows, and Renovate.",
       "defaultValue": "true"
     },
     "skipRestore": {
