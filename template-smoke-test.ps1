@@ -159,8 +159,7 @@ function Assert-GeneratedNaming {
         $expectedFiles += @(
             "renovate.json",
             ".github/workflows/ci.yml",
-            ".github/workflows/dependency-review.yml",
-            ".github/workflows/publish-nuget.yml"
+            ".github/workflows/dependency-review.yml"
         )
     }
 
@@ -257,8 +256,8 @@ function Assert-GeneratedNaming {
 
     $globalJson = Get-Content -Path (Join-Path $OutputPath "global.json") -Raw | ConvertFrom-Json
     $buildSdkVersion = $globalJson.'msbuild-sdks'.'Atya.Build.Sdk'
-    if ($buildSdkVersion -ne "1.5.0") {
-        throw "Expected global.json to pin Atya.Build.Sdk 1.5.0, found '$buildSdkVersion'."
+    if ($buildSdkVersion -ne "1.5.4") {
+        throw "Expected global.json to pin Atya.Build.Sdk 1.5.4, found '$buildSdkVersion'."
     }
 
     $targetFramework = Get-MSBuildProperty -ProjectPath $packageProjectPath -PropertyName "TargetFramework"
@@ -341,27 +340,49 @@ function Assert-GeneratedNaming {
         }
 
         $dependencyReviewWorkflow = Get-Content -Path (Join-Path $OutputPath ".github/workflows/dependency-review.yml") -Raw
-        if ($dependencyReviewWorkflow -notmatch [regex]::Escape("uses: AtyaLibraries/github-workflows/.github/workflows/dependency-review.yml@v1")) {
+        if ($dependencyReviewWorkflow -notmatch "uses: AtyaLibraries/github-workflows/\.github/workflows/dependency-review\.yml@[0-9a-f]{40} # v\d+(\.\d+){0,2}\b") {
             throw "Generated dependency-review workflow does not call the organization reusable workflow."
         }
 
-        $publishWorkflow = Get-Content -Path (Join-Path $OutputPath ".github/workflows/publish-nuget.yml") -Raw
-        foreach ($expectedPublishToken in @(
-            "tags:",
-            "SOURCE_SOLUTION: ./$expectedShortName.sln",
-            "SOURCE_PACKAGE_PROJECT: ./src/$expectedShortName/$expectedShortName.csproj",
-            "repo: 'publisher'",
-            "event_type: 'publish-package'"
-        )) {
-            if ($publishWorkflow -notmatch [regex]::Escape($expectedPublishToken)) {
-                throw "Generated publish workflow is missing '$expectedPublishToken'."
-            }
+        $senderPath = Join-Path $OutputPath ".github/workflows/publish-nuget.yml"
+        if (Test-Path -LiteralPath $senderPath) {
+            throw "Generated repository must not contain the release-trigger workflow publish-nuget.yml."
         }
 
-        foreach ($forbiddenPublishToken in @("workflow_dispatch", "NUGET_API_KEY", "dotnet nuget push")) {
-            if ($publishWorkflow -match [regex]::Escape($forbiddenPublishToken)) {
-                throw "Generated publish workflow should be tag-only dispatch and must not contain '$forbiddenPublishToken'."
+        foreach ($forbiddenSenderToken in @("PUBLISHER_DISPATCH_TOKEN", "createDispatchEvent", "repository_dispatch", "publish-package", "NUGET_API_KEY", "dotnet nuget push")) {
+            $hits = Get-ChildItem -Path (Join-Path $OutputPath ".github") -Recurse -File |
+                Select-String -SimpleMatch -Pattern $forbiddenSenderToken
+            if ($hits) {
+                throw "Generated .github content must not contain '$forbiddenSenderToken'."
             }
+        }
+    }
+}
+
+function Assert-RepositoryHasNoPublishPath {
+    # ATYA-017: releases go through AtyaLibraries/publisher only. This repository's own
+    # workflows (and the generated variants) must not publish, sign, or request OIDC.
+    $forbidden = @("NuGet/login", "dotnet nuget push", "NUGET_API_KEY", "NUGET_SIGN_CERT",
+        "repository_dispatch", "id-token: write", "environment: production")
+    $roots = @(
+        (Join-Path $templateRoot ".github/workflows"),
+        (Join-Path $templateRoot ".template.variants")
+    )
+    $files = foreach ($root in $roots) {
+        if (Test-Path -LiteralPath $root) {
+            Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -in @(".yml", ".yaml") }
+        }
+    }
+    foreach ($token in $forbidden) {
+        $hits = @($files | Select-String -SimpleMatch -Pattern $token)
+        if ($hits.Count -gt 0) {
+            $where = ($hits | ForEach-Object { "$($_.Filename):$($_.LineNumber)" }) -join ", "
+            throw "The template repository must not contain a publishing path: '$token' found in $where."
+        }
+    }
+    foreach ($name in @("publish-template.yml", "publish.yml", "publish-nuget.yml")) {
+        if (Test-Path -LiteralPath (Join-Path $templateRoot ".github/workflows/$name")) {
+            throw "The template repository must not contain the publish workflow '$name'."
         }
     }
 }
@@ -671,6 +692,9 @@ Write-Host "Scratch root : $scratchRoot" -ForegroundColor Cyan
 
 try {
     New-Item -ItemType Directory -Path $scratchRoot | Out-Null
+
+    Assert-RepositoryHasNoPublishPath
+    Write-Host "[Release path] No repository-local publishing path found." -ForegroundColor Green
 
     Write-Host "`nInstalling template from $repoRoot..." -ForegroundColor Yellow
     Invoke-NativeCommand -Description "Template installation" -Command {

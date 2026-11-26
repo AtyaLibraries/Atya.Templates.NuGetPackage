@@ -54,7 +54,6 @@
         "src/NuGetPackage/icon.png",
         "src/NuGetPackage/Properties/AssemblyInfo.cs",
         ".github/workflows/test-template.yml",
-        ".github/workflows/publish-template.yml",
         "NuGetPackage.sln",
         "**/[Bb]in/**",
         "**/[Oo]bj/**",
@@ -100,6 +99,18 @@
       "modifiers": [
         {
           "condition": "(includeBenchmarks)",
+          "exclude": [
+            "**"
+          ]
+        }
+      ]
+    },
+    {
+      "source": "./.template.variants/generated-github/",
+      "target": "./",
+      "modifiers": [
+        {
+          "condition": "(!includeGitHub)",
           "exclude": [
             "**"
           ]
@@ -189,7 +200,7 @@
       "type": "parameter",
       "datatype": "bool",
       "displayName": "Include GitHub configuration",
-      "description": "Adds .github/ folder with CI, dependency-review, publish-dispatch workflows, and Renovate.",
+      "description": "Adds .github/ folder with CI, dependency-review workflows, and Renovate.",
       "defaultValue": "true"
     },
     "skipRestore": {
