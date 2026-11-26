@@ -54,7 +54,6 @@
         "src/NuGetPackage/icon.png",
         "src/NuGetPackage/Properties/AssemblyInfo.cs",
         ".github/workflows/test-template.yml",
-        ".github/workflows/publish-template.yml",
         "NuGetPackage.sln",
         "**/[Bb]in/**",
         "**/[Oo]bj/**",

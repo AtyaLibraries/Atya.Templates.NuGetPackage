@@ -359,6 +359,34 @@ function Assert-GeneratedNaming {
     }
 }
 
+function Assert-RepositoryHasNoPublishPath {
+    # ATYA-017: releases go through AtyaLibraries/publisher only. This repository's own
+    # workflows (and the generated variants) must not publish, sign, or request OIDC.
+    $forbidden = @("NuGet/login", "dotnet nuget push", "NUGET_API_KEY", "NUGET_SIGN_CERT",
+        "repository_dispatch", "id-token: write", "environment: production")
+    $roots = @(
+        (Join-Path $templateRoot ".github/workflows"),
+        (Join-Path $templateRoot ".template.variants")
+    )
+    $files = foreach ($root in $roots) {
+        if (Test-Path -LiteralPath $root) {
+            Get-ChildItem -LiteralPath $root -Recurse -File | Where-Object { $_.Extension -in @(".yml", ".yaml") }
+        }
+    }
+    foreach ($token in $forbidden) {
+        $hits = @($files | Select-String -SimpleMatch -Pattern $token)
+        if ($hits.Count -gt 0) {
+            $where = ($hits | ForEach-Object { "$($_.Filename):$($_.LineNumber)" }) -join ", "
+            throw "The template repository must not contain a publishing path: '$token' found in $where."
+        }
+    }
+    foreach ($name in @("publish-template.yml", "publish.yml", "publish-nuget.yml")) {
+        if (Test-Path -LiteralPath (Join-Path $templateRoot ".github/workflows/$name")) {
+            throw "The template repository must not contain the publish workflow '$name'."
+        }
+    }
+}
+
 function Invoke-GeneratedLifecycle {
     param(
         [Parameter(Mandatory = $true)]
@@ -664,6 +692,9 @@ Write-Host "Scratch root : $scratchRoot" -ForegroundColor Cyan
 
 try {
     New-Item -ItemType Directory -Path $scratchRoot | Out-Null
+
+    Assert-RepositoryHasNoPublishPath
+    Write-Host "[Release path] No repository-local publishing path found." -ForegroundColor Green
 
     Write-Host "`nInstalling template from $repoRoot..." -ForegroundColor Yellow
     Invoke-NativeCommand -Description "Template installation" -Command {
