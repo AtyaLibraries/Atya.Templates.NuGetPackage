@@ -50,7 +50,7 @@ test-stack wiring.
 | Option | Default | Behavior |
 | --- | --- | --- |
 | `--include-benchmarks` | `true` | Includes the BenchmarkDotNet project and solution wiring. |
-| `--include-github` | `true` | Includes CI, dependency review, tag-publish dispatch, and Renovate configuration. |
+| `--include-github` | `true` | Includes CI, dependency review, and Renovate configuration. No release workflow is generated. |
 
 `Atya.Foundation.Guards` is the unconditional runtime baseline. `Atya.Build.Sdk`
 supplies the shared CodeQuality, Testing, MinVer, and SourceLink wiring. These
@@ -71,13 +71,15 @@ dotnet new atya-nuget \
 - A build and pack guard that rejects nonconforming package IDs and requires
   `AssemblyName` and `RootNamespace` to equal `PackageId`, unless
   `SkipPackageNamingValidation=true` is set for an explicit exception.
-- Keyless tag-based publishing through the central `AtyaLibraries/publisher`
-  workflow.
+- Keyless publishing through the central `AtyaLibraries/publisher` workflow, started
+  by a maintainer with `workflow_dispatch`. The generated repository has no
+  release-trigger or publish workflow of its own.
 - Rulesets-based protection for `development` and `master`.
 
 ## Versioning
 
 MinVer derives versions from `vMAJOR.MINOR.PATCH` tags. Generated repositories
-publish without repo-local NuGet API keys: pushing a `v*` tag dispatches the
-central publisher, which owns NuGet.org trusted publishing and release
-credentials.
+publish without repo-local NuGet API keys, and pushing a tag publishes nothing. A
+maintainer starts a release by running `publish.yml` in `AtyaLibraries/publisher`
+with `workflow_dispatch`; that central workflow owns NuGet.org trusted publishing
+and release credentials.
